@@ -5,6 +5,8 @@ import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import * as path from "path";
 import proxy from "express-http-proxy";
+import dotenv from "dotenv";
+dotenv.config();
 
 const app = express();
 
