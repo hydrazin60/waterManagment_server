@@ -1,5 +1,3 @@
-// src/middleware/errorMiddleware.ts
-
 import { Request, Response } from "express";
 import { AppError } from "./index";
 
