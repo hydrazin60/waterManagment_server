@@ -1,0 +1,78 @@
+{
+  "name": "@server/auth_workSpace",
+  "version": "0.0.1",
+  "private": true,
+  "nx": {
+    "targets": {
+      "build": {
+        "executor": "@nx/esbuild:esbuild",
+        "outputs": [
+          "{options.outputPath}"
+        ],
+        "defaultConfiguration": "production",
+        "options": {
+          "platform": "node",
+          "outputPath": "apps/auth_workSpace/dist",
+          "format": [
+            "cjs"
+          ],
+          "bundle": false,
+          "main": "apps/auth_workSpace/src/main.ts",
+          "tsConfig": "apps/auth_workSpace/tsconfig.app.json",
+          "assets": [
+            "apps/auth_workSpace/src/assets"
+          ],
+          "esbuildOptions": {
+            "sourcemap": true,
+            "outExtension": {
+              ".js": ".js"
+            }
+          }
+        },
+        "configurations": {
+          "development": {},
+          "production": {
+            "generateLockfile": true,
+            "esbuildOptions": {
+              "sourcemap": false,
+              "outExtension": {
+                ".js": ".js"
+              }
+            }
+          }
+        }
+      },
+      "serve": {
+        "continuous": true,
+        "executor": "@nx/js:node",
+        "defaultConfiguration": "development",
+        "dependsOn": [
+          "build"
+        ],
+        "options": {
+          "buildTarget": "@server/auth_workSpace:build",
+          "runBuildTargetDependencies": false
+        },
+        "configurations": {
+          "development": {
+            "buildTarget": "@server/auth_workSpace:build:development"
+          },
+          "production": {
+            "buildTarget": "@server/auth_workSpace:build:production"
+          }
+        }
+      },
+      "test": {
+        "options": {
+          "passWithNoTests": true
+        }
+      },
+      "docker-build": {
+        "dependsOn": [
+          "build"
+        ],
+        "command": "docker build -f apps/auth_workSpace/Dockerfile . -t server-auth_workspace"
+      }
+    }
+  }
+}
