@@ -5,9 +5,14 @@ import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
 import * as path from "path";
 import proxy from "express-http-proxy";
+import dotenv from "dotenv";
+import { errorMiddleware } from "../../../packages/error_handler/error_middleware";
+import { dbConnect } from "../../../db/dbConnect";
+dotenv.config();
 
 const app = express();
 
+// Middlewares
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ limit: "100mb", extended: true }));
 app.use(cookieParser());
@@ -31,10 +36,14 @@ app.use(
   })
 );
 app.use(morgan("dev"));
+// middlewares for error handling
+app.use(errorMiddleware);
+app.use(dbConnect);
+// Routes
 app.use("/assets", express.static(path.join(__dirname, "assets")));
 app.use(
   "/",
-  proxy("http://localhost:3333") as unknown as express.RequestHandler
+  proxy("http://localhost:5000") as unknown as express.RequestHandler
 );
 app.get("/api", (req, res) => {
   res.send({ message: "Welcome to api-gateway!" });
