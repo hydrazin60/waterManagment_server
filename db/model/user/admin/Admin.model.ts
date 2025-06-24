@@ -13,12 +13,50 @@ interface IAdminAccess {
   paymentManagement: boolean;
 }
 
+interface IAddress {
+  district: string;
+  municipality?: string;
+  city?: string;
+  tole?: string;
+  nearFamousPlace?: string;
+  country: string;
+  province: string;
+  zip: string;
+  coordinates?: [number, number];
+}
+
+interface IIdentityDocument {
+  NationalID?: string;
+  NationalIDPhoto?: string;
+  passportNumber?: string;
+  passportImage?: string;
+  License?: string;
+  LicensePhoto?: string;
+  citizenShipNumber?: string;
+  citizenShipPhoto?: string;
+  EmergencyContact?: string;
+  EmergencyName?: string;
+  EmergencyEmail?: string;
+  AccountNumber?: string;
+  bankName?: string;
+  bankBranch?: string;
+  bankQRCode?: string;
+  e_SewaID?: string;
+  e_SewaQRCode?: string;
+  khaltiID?: string;
+  KhaltiQRCode?: string;
+}
+
 export interface IAdmin extends Document {
   name: string;
   email: string;
   password: string;
   phone: string;
   role: "superadmin" | "admin" | "moderator" | "support" | "developer";
+  permanentAddress: IAddress;
+  temporaryAddress?: IAddress;
+  identityDocument?: IIdentityDocument;
+  chats?: Types.ObjectId[];
   isActive: boolean;
   lastLogin?: Date;
   lastLogout?: Date;
@@ -30,9 +68,7 @@ export interface IAdmin extends Document {
   updatedAt: Date;
   resetPasswordToken?: string;
   resetPasswordExpire?: Date;
-  // Relations
-  managedBusinesses?: Types.ObjectId[]; // Businesses this admin oversees
-  createdBy?: Types.ObjectId; // For tracking admin creation hierarchy
+  createdBy?: Types.ObjectId;
 }
 
 const AdminAccessSchema = new Schema<IAdminAccess>({
@@ -48,6 +84,40 @@ const AdminAccessSchema = new Schema<IAdminAccess>({
   paymentManagement: { type: Boolean, default: false },
 });
 
+const IdentityDocumentSchema = new Schema<IIdentityDocument>({
+  NationalID: { type: String, unique: true },
+  NationalIDPhoto: { type: String },
+  passportNumber: { type: String, unique: true },
+  passportImage: { type: String },
+  License: { type: String, unique: true },
+  LicensePhoto: { type: String },
+  citizenShipNumber: { type: String, unique: true },
+  citizenShipPhoto: [{ type: String }],
+  EmergencyContact: { type: String },
+  EmergencyName: { type: String },
+  EmergencyEmail: { type: String },
+  AccountNumber: { type: String },
+  bankName: { type: String },
+  bankBranch: { type: String },
+  bankQRCode: { type: String },
+  e_SewaID: { type: String },
+  e_SewaQRCode: { type: String },
+  khaltiID: { type: String },
+  KhaltiQRCode: { type: String },
+});
+
+const AddressSchema = new Schema<IAddress>({
+  district: { type: String, required: true },
+  municipality: { type: String },
+  city: { type: String },
+  tole: { type: String },
+  nearFamousPlace: { type: String },
+  country: { type: String, default: "Nepal" },
+  province: { type: String },
+  zip: { type: String },
+  coordinates: { type: [Number] },
+});
+
 const AdminSchema = new Schema<IAdmin>(
   {
     name: { type: String, required: true },
@@ -57,9 +127,13 @@ const AdminSchema = new Schema<IAdmin>(
     role: {
       type: String,
       required: true,
-      enum: ["superadmin", "admin", "moderator", "support"],
+      enum: ["superadmin", "admin", "moderator", "support", "developer"],
       default: "admin",
     },
+    permanentAddress: { type: AddressSchema, required: true },
+    temporaryAddress: { type: AddressSchema },
+    identityDocument: { type: IdentityDocumentSchema },
+    chats: [{ type: Types.ObjectId, ref: "Chat" }],
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date },
     lastLogout: { type: Date },
@@ -69,13 +143,13 @@ const AdminSchema = new Schema<IAdmin>(
     profileImage: { type: String },
     resetPasswordToken: { type: String },
     resetPasswordExpire: { type: Date },
-    managedBusinesses: [{ type: Types.ObjectId, ref: "BusinessUser" }],
     createdBy: { type: Types.ObjectId, ref: "Admin" },
   },
   { timestamps: true }
 );
 
-// Indexes for faster queries
-AdminSchema.index({ email: 1, role: 1, isActive: 1 });
+// Indexes
+AdminSchema.index({ email: 1, phone: 1, role: 1, isActive: 1 });
+AdminSchema.index({ createdAt: -1 });
 
 export const Admin = mongoose.model<IAdmin>("Admin", AdminSchema);
