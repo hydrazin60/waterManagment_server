@@ -1,55 +1,72 @@
+// apps/api-gateway/src/main.ts
 import express from "express";
 import cors from "cors";
 import morgan from "morgan";
 import cookieParser from "cookie-parser";
 import rateLimit from "express-rate-limit";
-import * as path from "path";
+import path from "path";
 import proxy from "express-http-proxy";
-import dotenv from "dotenv";
 import { errorMiddleware } from "../../../packages/error_handler/error_middleware";
 import { dbConnect } from "../../../db/dbConnect";
-dotenv.config();
 
 const app = express();
+
+// Database connection (remove from middleware)
+dbConnect().catch(err => {
+  console.error("Failed to connect to MongoDB", err);
+  process.exit(1);
+});
 
 // Middlewares
 app.use(express.json({ limit: "100mb" }));
 app.use(express.urlencoded({ limit: "100mb", extended: true }));
 app.use(cookieParser());
+app.use(morgan("dev"));
+
+// Rate limiting
 const limiter = rateLimit({
   windowMs: 15 * 60 * 1000,
-  max: (req: any) => (req.user ? 1000 : 100),
-  message: {
-    error: "Too many requests from this IP, please try again later.",
-  },
+  max: 100,
+  message: "Too many requests from this IP, please try again later.",
   standardHeaders: true,
   legacyHeaders: false,
-  keyGenerator: (req: any) => req.ip,
 });
-app.use(limiter as any);
+app.use(limiter);
 app.set("trust proxy", 1);
-app.use(
-  cors({
-    origin: "http://localhost:3000",
-    allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-  })
-);
-app.use(morgan("dev"));
-// middlewares for error handling
-app.use(errorMiddleware);
-app.use(dbConnect);
-// Routes
+
+// CORS
+app.use(cors({
+  origin: "http://localhost:3000",
+  credentials: true,
+  methods: ["GET", "POST", "PUT", "DELETE"],
+}));
+
+// Proxy configuration
+app.use("/api/auth", proxy("http://localhost:5000", {
+  proxyReqPathResolver: (req) => {
+    return `/api/v1/Ad_water-supply/Admin/auth${req.url}`;
+  },
+  proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
+    proxyReqOpts.timeout = 10000; // 10 second timeout
+    return proxyReqOpts;
+  }
+}));
+
+// Static assets
 app.use("/assets", express.static(path.join(__dirname, "assets")));
-app.use(
-  "/",
-  proxy("http://localhost:5000") as unknown as express.RequestHandler
-);
-app.get("/api", (req, res) => {
-  res.send({ message: "Welcome to api-gateway!" });
+
+// Health check
+app.get("/api/health", (req, res) => {
+  res.status(200).json({ status: "ok" });
 });
+
+// Error handling (must be last)
+app.use(errorMiddleware);
+
 const port = process.env.PORT || 6000;
-const server = app.listen(port, () => {
-  console.log(`Listening at http://localhost:${port}/api`);
+app.listen(port, () => {
+  console.log(`API Gateway running on port ${port}`);
+}).on("error", (err) => {
+  console.error("Server error:", err);
+  process.exit(1);
 });
-server.on("error", console.error);

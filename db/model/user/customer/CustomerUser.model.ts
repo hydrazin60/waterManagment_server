@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 
+// ====================== ADDRESS INTERFACE ======================
 interface IAddress {
   district: string;
   municipality?: string;
@@ -9,31 +10,34 @@ interface IAddress {
   country: string;
   province: string;
   zip: string;
-  coordinates?: [number, number]; 
+  coordinates?: [number, number];
 }
 
+// ====================== CUSTOMER USER ======================
 export interface ICustomerUser extends Document {
-  name: string;
+  name?: string;
   email: string;
   password: string;
-  phone: string;
+  phone?: string;
   role: "customer";
   customerType?: "new" | "occasional" | "regular" | "loyal";
   address?: IAddress;
   isActive: boolean;
   loyaltyPoints?: number;
   orders?: Types.ObjectId[];
+  referBy?: Types.ObjectId;
   isVerified: boolean;
   createdAt: Date;
   updatedAt: Date;
+  gifts?: Types.ObjectId[];
 }
 
 const CustomerUserSchema = new Schema<ICustomerUser>(
   {
-    name: { type: String, required: true },
+    name: { type: String },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
-    phone: { type: String, required: true },
+    phone: { type: String, unique: true },
     role: { type: String, default: "customer", enum: ["customer"] },
     customerType: {
       type: String,
@@ -54,6 +58,8 @@ const CustomerUserSchema = new Schema<ICustomerUser>(
     loyaltyPoints: { type: Number, default: 0 },
     orders: [{ type: Types.ObjectId, ref: "Order" }],
     isVerified: { type: Boolean, default: false },
+    referBy: { type: Types.ObjectId, ref: "CustomerUser" },
+    gifts: [{ type: Types.ObjectId, ref: "Gift" }],
   },
   { timestamps: true }
 );
@@ -62,3 +68,5 @@ export const CustomerUser = mongoose.model<ICustomerUser>(
   "CustomerUser",
   CustomerUserSchema
 );
+
+export default CustomerUser;
