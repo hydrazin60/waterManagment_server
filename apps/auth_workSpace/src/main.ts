@@ -3,7 +3,9 @@ import express from "express";
 import bodyParser from "body-parser";
 import adminAuthRouter from "./routes/admin/Admin.auth.routes";
 import { dbConnect } from "../../../db/dbConnect";
-
+import { swaggerDocs } from "./Swagger";
+import dotenv from "dotenv";
+dotenv.config();
 const app = express();
 
 // Database connection
@@ -31,6 +33,7 @@ app.use(
     res.status(500).json({ error: "Internal server error" });
   }
 );
+swaggerDocs(app);
 
 const port = process.env.AUTH_PORT || 5000;
 app

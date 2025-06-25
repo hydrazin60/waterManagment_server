@@ -10,6 +10,7 @@ interface RegistrationData {
   password?: string;
   phone?: string;
   accountType?: string;
+  permanentAddress?: any;
 }
 
 export const validateRegistrationData = (
@@ -21,6 +22,7 @@ export const validateRegistrationData = (
     password = "",
     phone = "",
     accountType = "",
+    permanentAddress = {},
   } = data;
 
   // Email validation
@@ -58,10 +60,19 @@ export const validateRegistrationData = (
         error: new ValidationError("Invalid phone number"),
       };
     }
+    // Validate permanent address for admin
+    if (!permanentAddress || !permanentAddress.district || !permanentAddress.country || 
+        !permanentAddress.province || !permanentAddress.zip) {
+      return {
+        valid: false,
+        error: new ValidationError("Permanent address with district, country, province and zip is required for admin"),
+      };
+    }
   }
 
   return { valid: true };
 };
+
 export const checkOtpRestrictions = async (
   email: string,
   next: NextFunction
@@ -117,6 +128,42 @@ export const sendOTP = async ({
   await redis.set(`otp_cooldown:${email}`, "true", "EX", 60);
 
   return OTP;
+};
+
+export const verifyOTP = async (
+  email: string,
+  otp: string
+): Promise<boolean> => {
+  const storedOTP = await redis.get(`otp:${email}`);
+
+  console.log(`Stored OTP for ${email}: ${storedOTP}`);
+  console.log(`Received OTP: ${otp}`);
+
+  if (!storedOTP) {
+    throw new ValidationError("OTP expired or not found. Please request a new OTP.");
+  }
+
+  const failedAttemptsKey = `otp_attempts:${email}`;
+  const attempts = parseInt((await redis.get(failedAttemptsKey)) || "0") + 1;
+
+  if (storedOTP.trim() !== otp.trim()) {
+    if (attempts >= 3) {
+      await redis.set(`otp_lock:${email}`, "locked", "EX", 1800);
+      await redis.del(`otp:${email}`, failedAttemptsKey);
+      throw new ValidationError(
+        "Too many attempts. Try again after 30 minutes."
+      );
+    }
+
+    await redis.set(failedAttemptsKey, attempts.toString(), "EX", 300);
+    throw new ValidationError(
+      `Invalid OTP. ${3 - attempts} attempts remaining`
+    );
+  }
+
+  // Cleanup on successful verification
+  await redis.del(`otp:${email}`, failedAttemptsKey);
+  return true;
 };
 
 export const trackOTPRequests = async (
