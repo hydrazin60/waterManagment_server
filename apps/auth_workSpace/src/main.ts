@@ -4,7 +4,8 @@ import bodyParser from "body-parser";
 import adminAuthRouter from "./routes/admin/Admin.auth.routes";
 import { dbConnect } from "../../../db/dbConnect";
 import { swaggerDocs } from "./Swagger";
-
+import dotenv from "dotenv";
+dotenv.config();
 const app = express();
 
 // Database connection
