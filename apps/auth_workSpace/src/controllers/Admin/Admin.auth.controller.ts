@@ -9,55 +9,43 @@ import {
   validateRegistrationData,
   verifyOTP,
 } from "../../utils/auth.helper";
+import { catchAsync } from "../../../../../packages/error_handler/error_middleware";
 
-export const adminRegistration = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    console.log("Registration request body:", req.body);
-
+export const adminRegistration = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
     const { valid, error } = validateRegistrationData(req.body);
     if (!valid && error) {
       return next(error);
     }
-
     const { email } = req.body;
 
-    // Check if admin already exists
+    // Check if admin already exists - with better error details
     const existingAdmin = await Admin.findOne({ email });
     if (existingAdmin) {
       return next(
-        new ValidationError(
-          "Admin with this email already exists. Please login"
-        )
+        new ValidationError("Admin with this email already exists", {
+          email,
+          suggestion: "Please login instead of registering",
+          status: "user_exists",
+        })
       );
     }
 
-    // OTP flow
+    // Rest of your OTP flow...
     await checkOtpRestrictions(email, next);
     await trackOTPRequests(email, next);
     const otp = await sendOTP({
       email,
       template: "user-activation-mail",
     });
-
-    console.log(`OTP sent to ${email}: ${otp}`);
-
+    console.log(otp);
     res.status(200).json({
       success: true,
       message: "OTP sent successfully",
-      data: {
-        email,
-        otpExpiresIn: "5 minutes", // Inform client about OTP expiration
-      },
+      data: { email, otpExpiresIn: "5 minutes" },
     });
-  } catch (error) {
-    console.error("Registration error:", error);
-    next(error);
   }
-};
+);
 
 export const verifyUserOTP = async (
   req: Request,
@@ -65,8 +53,6 @@ export const verifyUserOTP = async (
   next: NextFunction
 ) => {
   try {
-    console.log("Verification request body:", req.body);
-
     const {
       name,
       email,

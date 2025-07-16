@@ -301,7 +301,7 @@ PurchaseInvoiceSchema.index({ "shipment.receivedBy": 1 });
 PurchaseInvoiceSchema.pre<IPurchaseInvoice>("save", function (next) {
   // Calculate balance due before saving
   this.balanceDue = this.grandTotal - this.amountPaid;
-  
+
   // Update payment status
   if (this.balanceDue <= 0) {
     this.paymentStatus = "paid";
@@ -312,7 +312,7 @@ PurchaseInvoiceSchema.pre<IPurchaseInvoice>("save", function (next) {
   } else {
     this.paymentStatus = "unpaid";
   }
-  
+
   next();
 });
 

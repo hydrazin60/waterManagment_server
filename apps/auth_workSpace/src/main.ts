@@ -1,10 +1,10 @@
-// apps/auth_workSpace/src/main.ts
 import express from "express";
 import bodyParser from "body-parser";
-import adminAuthRouter from "./routes/admin/Admin.auth.routes";
+import adminAuthRouter from "./routes/public/admin/Admin.auth.routes";
 import { dbConnect } from "../../../db/dbConnect";
 import { swaggerDocs } from "./Swagger";
 import dotenv from "dotenv";
+import { errorMiddleware } from "../../../packages/error_handler/error_middleware"; 
 dotenv.config();
 const app = express();
 
@@ -19,21 +19,13 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routes
-app.use("/api/v1/Ad_water-supply/Admin/auth", adminAuthRouter);
+app.use("/api/v1/admin/auth", adminAuthRouter);
 
-// Error handling
-app.use(
-  (
-    err: Error,
-    req: express.Request,
-    res: express.Response,
-    next: express.NextFunction
-  ) => {
-    console.error("Auth service error:", err);
-    res.status(500).json({ error: "Internal server error" });
-  }
-);
+// Swagger documentation
 swaggerDocs(app);
+
+// Use your proper error middleware (remove the basic one)
+app.use(errorMiddleware);
 
 const port = process.env.AUTH_PORT || 5000;
 app

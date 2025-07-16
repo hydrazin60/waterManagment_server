@@ -3,7 +3,9 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
-    "dev": "npx nx run-many --target=serve --all"
+    "dev": "npx nx run-many --target=serve --all",
+    "clean": "rimraf dist",
+    "build": "npm run clean && tsc"
   },
   "private": true,
   "dependencies": {
@@ -55,6 +57,7 @@
     "jest-environment-node": "^29.7.0",
     "nx": "21.2.1",
     "react-refresh": "^0.10.0",
+    "rimraf": "^6.0.1",
     "ts-jest": "^29.1.0",
     "ts-node": "10.9.1",
     "ts-node-dev": "^2.0.0",
