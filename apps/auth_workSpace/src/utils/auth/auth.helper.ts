@@ -1,7 +1,7 @@
-import { otpVerificationEmail } from "../service/email/emailVerifyOTP";
-import redis from "../../../../packages/redis";
+import { otpVerificationEmail } from "../../service/email/emailVerifyOTP";
+import redis from "../../../../../packages/redis";
 import crypto from "crypto";
-import { ValidationError } from "../../../../packages/error_handler";
+import { ValidationError } from "../../../../../packages/error_handler";
 import { NextFunction } from "express";
 
 interface RegistrationData {
@@ -12,6 +12,7 @@ interface RegistrationData {
   accountType?: string;
   permanentAddress?: any;
 }
+
 
 export const validateRegistrationData = (
   data: Partial<RegistrationData> = {}

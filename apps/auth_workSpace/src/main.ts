@@ -4,7 +4,9 @@ import adminAuthRouter from "./routes/public/admin/Admin.auth.routes";
 import { dbConnect } from "../../../db/dbConnect";
 import { swaggerDocs } from "./Swagger";
 import dotenv from "dotenv";
-import { errorMiddleware } from "../../../packages/error_handler/error_middleware"; 
+import { errorMiddleware } from "../../../packages/error_handler/error_middleware";
+import allUserRouter from "./routes/public/All/alluser.routes";
+
 dotenv.config();
 const app = express();
 
@@ -20,7 +22,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routes
 app.use("/api/v1/admin/auth", adminAuthRouter);
-
+app.use("/api/v1/allUser", allUserRouter);
 // Swagger documentation
 swaggerDocs(app);
 

@@ -1,4 +1,4 @@
- import mongoose, { Document, Schema, Types } from "mongoose";
+import mongoose, { Document, Schema, Types } from "mongoose";
 
 // ====================== COMMON INTERFACES ======================
 interface IAddress {
@@ -85,13 +85,7 @@ export interface IBusinessUser extends Document {
   chatSettings: IChatSettings;
   // Company Association
   company: Types.ObjectId;
-  roleInCompany:
-    | "owner"
-    | "admin"
-    | "manager"
-    | "staff"
-    | "supplier"
-    | "customer";
+  roleInCompany: "owner" | "manager" | "ceo" | "cbo" | "HR" | "director";
   department?: string;
   position?: string;
   isPrimaryContact: boolean;
@@ -201,7 +195,7 @@ const BusinessUserSchema = new Schema<IBusinessUser>(
     roleInCompany: {
       type: String,
       required: true,
-      enum: ["owner", "admin", "manager", "staff", "supplier", "customer"],
+      enum: ["owner", "manager", "ceo", "cbo", "HR", "director"],
     },
     department: { type: String },
     position: { type: String },
