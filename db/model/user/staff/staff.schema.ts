@@ -10,7 +10,11 @@ export interface IStaff extends Document {
   role: Array<
     | "manager"
     | "ceo"
+    | "cbo"
+    | "HR"
+    | "director"
     | "accountent"
+    | "cleaner"
     | "driver"
     | "marketer"
     | "factoryWorker"
@@ -121,11 +125,17 @@ const staffSchema = new Schema<IStaff>(
       required: true,
       enum: [
         "manager",
-        "admin",
+        "ceo",
+        "cbo",
+        "HR",
+        "director",
         "accountent",
+        "cleaner",
         "driver",
         "marketer",
         "factoryWorker",
+        "warehouseWorker",
+        "helper",
       ],
       comment:
         "Array of roles assigned to the staff member (can have multiple roles)",

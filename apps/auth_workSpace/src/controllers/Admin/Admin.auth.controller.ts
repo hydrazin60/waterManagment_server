@@ -8,7 +8,7 @@ import {
   trackOTPRequests,
   validateRegistrationData,
   verifyOTP,
-} from "../../utils/auth.helper";
+} from "../../utils/auth/auth.helper";
 import { catchAsync } from "../../../../../packages/error_handler/error_middleware";
 
 export const adminRegistration = catchAsync(
@@ -131,3 +131,4 @@ export const verifyUserOTP = async (
     next(err);
   }
 };
+

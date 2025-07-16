@@ -6,5 +6,5 @@ import {
 const AdminAuthRouter = express.Router();
 AdminAuthRouter.post("/register", adminRegistration);
 AdminAuthRouter.post("/verify-otp", verifyUserOTP);
-
+// AdminAuthRouter.post("/login")
 export default AdminAuthRouter;
