@@ -1,61 +1,88 @@
 import { Request, Response, NextFunction } from "express";
-import { AppError } from "./index";
+import { AppError, ValidationError } from "./index"; // Make sure to import your custom errors
+import { ServerError } from ".";
 
 interface ErrorResponse {
-  status: "error" | "fail";
+  success: boolean;
+  status: string;
   message: string;
-  details?: unknown;
+  error?: {
+    code: number;
+    details?: any;
+    stack?: string;
+  };
   timestamp: string;
-  stack?: string;
 }
 
 export const errorMiddleware = (
-  err: Error,
+  err: any,
   req: Request,
   res: Response,
   next: NextFunction
 ) => {
   // Default error response
   const errorResponse: ErrorResponse = {
+    success: false,
     status: "error",
-    message: "Something went wrong! Please try again",
+    message: err.message || "Something went wrong!",
     timestamp: new Date().toISOString(),
   };
 
-  // Handle AppError instances
+  // Handle custom AppError instances
   if (err instanceof AppError) {
-    console.error(
-      `[${req.method}] ${req.path} -> ${err.message} (${err.statusCode})`,
-      err.details ? `\nDetails: ${JSON.stringify(err.details, null, 2)}` : ""
-    );
+    errorResponse.error = {
+      code: err.statusCode,
+      details: err.details,
+    };
 
-    errorResponse.status = err.statusCode < 500 ? "fail" : "error";
-    errorResponse.message = err.message;
-
-    if (err.details) {
-      errorResponse.details = err.details;
-    }
-
-    // Include stack trace in development
+    // Include stack trace in development only
     if (process.env.NODE_ENV === "development") {
-      errorResponse.stack = err.stack;
+      errorResponse.error.stack = err.stack;
     }
 
     return res.status(err.statusCode).json(errorResponse);
   }
 
-  // Handle unexpected errors
-  console.error("Unhandled error:", err);
+  // Handle specific ValidationError
+  if (err instanceof ValidationError) {
+    errorResponse.status = "fail";
+    errorResponse.error = {
+      code: err.statusCode,
+      details: err.details || {
+        message: "Validation failed",
+        fields: Object.keys(req.body),
+      },
+    };
 
-  if (process.env.NODE_ENV === "development") {
-    errorResponse.stack = err.stack;
+    return res.status(err.statusCode).json(errorResponse);
   }
+
+  // Handle unexpected errors
+  console.error("[UNHANDLED ERROR]", err);
+
+  errorResponse.message = "Internal server error";
+  errorResponse.error = {
+    code: 500,
+    details:
+      process.env.NODE_ENV === "development"
+        ? {
+            name: err.name,
+            message: err.message,
+            stack: err.stack,
+          }
+        : undefined,
+  };
 
   return res.status(500).json(errorResponse);
 };
 
-// Error handler wrapper for async functions
 export const catchAsync =
   (fn: Function) => (req: Request, res: Response, next: NextFunction) => {
-    Promise.resolve(fn(req, res, next)).catch(next);
+    Promise.resolve(fn(req, res, next)).catch((err) => {
+      // Convert to AppError if not already
+      if (!(err instanceof AppError)) {
+        err = new ServerError(err.message, { originalError: err });
+      }
+      next(err);
+    });
   };

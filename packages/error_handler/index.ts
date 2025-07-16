@@ -21,64 +21,64 @@ export class AppError extends Error {
       Error.captureStackTrace(this, this.constructor);
     }
     
-    // Set prototype explicitly for instanceof checks
+    // Set prototype explicitly
     Object.setPrototypeOf(this, AppError.prototype);
   }
 }
 
 // Specific Error Classes
 export class ValidationError extends AppError {
-  constructor(message: string = "Invalid request data ❌", details?: ErrorDetails) {
+  constructor(message: string = "Invalid request data", details?: ErrorDetails) {
     super(message, 400, true, details);
     Object.setPrototypeOf(this, ValidationError.prototype);
   }
 }
 
 export class NotFoundError extends AppError {
-  constructor(details?: ErrorDetails) {
-    super("Resource not found 📄 ❌", 404, true, details);
+  constructor(message: string = "Resource not found", details?: ErrorDetails) {
+    super(message, 404, true, details);
     Object.setPrototypeOf(this, NotFoundError.prototype);
   }
 }
 
 export class AuthError extends AppError {
-  constructor(details?: ErrorDetails) {
-    super("You are not authorized 🔐", 401, true, details);
+  constructor(message: string = "You are not authorized", details?: ErrorDetails) {
+    super(message, 401, true, details);
     Object.setPrototypeOf(this, AuthError.prototype);
   }
 }
 
 export class ForbiddenError extends AppError {
-  constructor(details?: ErrorDetails) {
-    super("You cannot perform this action ⛔", 403, true, details);
+  constructor(message: string = "Forbidden action", details?: ErrorDetails) {
+    super(message, 403, true, details);
     Object.setPrototypeOf(this, ForbiddenError.prototype);
   }
 }
 
 export class ServerError extends AppError {
-  constructor(details?: ErrorDetails) {
-    super("Something went wrong 😵‍💫! Please try again", 500, true, details);
+  constructor(message: string = "Internal server error", details?: ErrorDetails) {
+    super(message, 500, true, details);
     Object.setPrototypeOf(this, ServerError.prototype);
   }
 }
 
 export class BadRequestError extends AppError {
-  constructor(details?: ErrorDetails) {
-    super("Bad request ⚠️", 400, true, details);
+  constructor(message: string = "Bad request", details?: ErrorDetails) {
+    super(message, 400, true, details);
     Object.setPrototypeOf(this, BadRequestError.prototype);
   }
 }
 
 export class DatabaseError extends AppError {
-  constructor(details?: ErrorDetails) {
-    super("Database error 💣", 500, true, details);
+  constructor(message: string = "Database error", details?: ErrorDetails) {
+    super(message, 500, true, details);
     Object.setPrototypeOf(this, DatabaseError.prototype);
   }
 }
 
 export class RateLimitError extends AppError {
-  constructor(details?: ErrorDetails) {
-    super("Too many requests 🕒 Please try again later!", 429, true, details);
+  constructor(message: string = "Too many requests", details?: ErrorDetails) {
+    super(message, 429, true, details);
     Object.setPrototypeOf(this, RateLimitError.prototype);
   }
 }

@@ -61,11 +61,17 @@ export const validateRegistrationData = (
       };
     }
     // Validate permanent address for admin
-    if (!permanentAddress || !permanentAddress.district || !permanentAddress.country || 
-        !permanentAddress.province || !permanentAddress.zip) {
+    if (
+      !permanentAddress ||
+      !permanentAddress.district ||
+      !permanentAddress.country ||
+      !permanentAddress.province
+    ) {
       return {
         valid: false,
-        error: new ValidationError("Permanent address with district, country, province and zip is required for admin"),
+        error: new ValidationError(
+          "Permanent address with district, country, province and zip is required for admin"
+        ),
       };
     }
   }
@@ -140,7 +146,9 @@ export const verifyOTP = async (
   console.log(`Received OTP: ${otp}`);
 
   if (!storedOTP) {
-    throw new ValidationError("OTP expired or not found. Please request a new OTP.");
+    throw new ValidationError(
+      "OTP expired or not found. Please request a new OTP."
+    );
   }
 
   const failedAttemptsKey = `otp_attempts:${email}`;
