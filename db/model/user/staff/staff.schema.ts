@@ -393,3 +393,4 @@ const StaffModel = mongoose.model<IStaff>("Staff", staffSchema);
 export default StaffModel;
 
 export const Staff = mongoose.model<IStaff>("Staff", staffSchema);
+
