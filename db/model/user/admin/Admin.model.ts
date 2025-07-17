@@ -149,7 +149,6 @@ const AdminSchema = new Schema<IAdmin>(
 );
 
 // Indexes
-AdminSchema.index({ email: 1, phone: 1, role: 1, isActive: 1 });
 AdminSchema.index({ createdAt: -1 });
 
 export const Admin = mongoose.model<IAdmin>("Admin", AdminSchema);

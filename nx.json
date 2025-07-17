@@ -18,7 +18,6 @@
       "{workspaceRoot}/.github/workflows/ci.yml"
     ]
   },
-  "nxCloudId": "68592b75c240693ffd28a185",
   "plugins": [
     {
       "plugin": "@nx/js/typescript",
@@ -69,6 +68,11 @@
       "dependsOn": [
         "^build"
       ]
+    }
+  },
+  "tasksRunnerOptions": {
+    "default": {
+      "runner": "@nx/devkit/tasks-runners/default"
     }
   }
 }

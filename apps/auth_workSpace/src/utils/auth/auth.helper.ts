@@ -46,7 +46,6 @@ export const validateRegistrationData = (
       error: new ValidationError("Password must be at least 8 characters"),
     };
   }
-
   // For non-customer accounts (like admin)
   if (accountType !== "customer") {
     if (!name.trim()) {
@@ -76,7 +75,6 @@ export const validateRegistrationData = (
       };
     }
   }
-
   return { valid: true };
 };
 

@@ -6,6 +6,7 @@ import { swaggerDocs } from "./Swagger";
 import dotenv from "dotenv";
 import { errorMiddleware } from "../../../packages/error_handler/error_middleware";
 import allUserRouter from "./routes/public/All/alluser.routes";
+import custommerRouter from "./routes/public/custommer/custommer.routes";
 
 dotenv.config();
 const app = express();
@@ -23,6 +24,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 // Routes
 app.use("/api/v1/admin/auth", adminAuthRouter);
 app.use("/api/v1/allUser", allUserRouter);
+app.use("/api/v1/custommer", custommerRouter);
 // Swagger documentation
 swaggerDocs(app);
 
