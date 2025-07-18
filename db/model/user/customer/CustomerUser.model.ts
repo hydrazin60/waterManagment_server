@@ -19,8 +19,8 @@ export interface ICustomerUser extends Document {
   email: string;
   password: string;
   phone?: string;
-  role: "customer";
-  customerType?: "new" | "occasional" | "regular" | "loyal";
+  accountType: "customer";
+  role?: "new" | "occasional" | "regular" | "loyal";
   address?: IAddress;
   isActive: boolean;
   loyaltyPoints?: number;
@@ -38,8 +38,8 @@ const CustomerUserSchema = new Schema<ICustomerUser>(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     phone: { type: String, unique: true },
-    role: { type: String, default: "customer", enum: ["customer"] },
-    customerType: {
+    accountType: { type: String, default: "customer", enum: ["customer"] },
+    role: {
       type: String,
       enum: ["new", "occasional", "regular", "loyal"],
     },

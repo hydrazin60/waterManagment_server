@@ -7,6 +7,7 @@ export interface IStaff extends Document {
   age: number;
   password: string;
   phoneNumber?: string;
+  accountType?: "staff";
   role: Array<
     | "manager"
     | "ceo"
@@ -108,6 +109,10 @@ const staffSchema = new Schema<IStaff>(
       unique: true,
       match: /^[\w-.]+@([\w-]+\.)+[\w-]{2,4}$/,
       comment: "Unique email address for login and communication",
+    },
+    accountType: {
+      type: String,
+      default: "staff",
     },
     phone: {
       type: String,
@@ -393,4 +398,3 @@ const StaffModel = mongoose.model<IStaff>("Staff", staffSchema);
 export default StaffModel;
 
 export const Staff = mongoose.model<IStaff>("Staff", staffSchema);
-

@@ -41,12 +41,12 @@ interface IChatSettings {
 // ====================== BUSINESS USER SCHEMA ======================
 export interface IBusinessUser extends Document {
   // Personal Info
-  firstName: string;
-  lastName: string;
+  name: string;
   email: string;
   password: string;
   phone: string;
   profileImage?: string;
+  accountType: "business";
   dateOfBirth?: Date;
   gender?: "male" | "female" | "other" | "prefer-not-to-say";
   emergencyContact?: {
@@ -84,7 +84,7 @@ export interface IBusinessUser extends Document {
   };
   chatSettings: IChatSettings;
   // Company Association
-  company: Types.ObjectId;
+  company?: Types.ObjectId;
   roleInCompany: "owner" | "manager" | "ceo" | "cbo" | "HR" | "director";
   department?: string;
   position?: string;
@@ -142,11 +142,11 @@ const ChatSettingsSchema = new Schema<IChatSettings>({
 const BusinessUserSchema = new Schema<IBusinessUser>(
   {
     // Personal Info
-    firstName: { type: String, required: true },
-    lastName: { type: String, required: true },
+    name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     phone: { type: String, required: true, unique: true },
+    accountType: { type: String, default: "business" },
     profileImage: { type: String },
     dateOfBirth: { type: Date },
     gender: {
@@ -191,7 +191,8 @@ const BusinessUserSchema = new Schema<IBusinessUser>(
     chatSettings: { type: ChatSettingsSchema, default: () => ({}) },
 
     // Company Association
-    company: { type: Schema.Types.ObjectId, ref: "Company", required: true },
+    company: { type: Schema.Types.ObjectId, ref: "Company", required: false },
+
     roleInCompany: {
       type: String,
       required: true,

@@ -7,6 +7,7 @@ import { errorMiddleware } from "../../../packages/error_handler/error_middlewar
 import allUserRouter from "./routes/public/user/All/alluser.routes";
 import AdminAuthRouter from "./routes/public/user/admin/Admin.auth.routes";
 import custommerRouter from "./routes/public/user/custommer/custommer.routes";
+import businessAccountRouter from "./routes/public/user/businessAccount/businessAccount.auth.routes";
 
 dotenv.config();
 const app = express();
@@ -25,6 +26,7 @@ app.use(bodyParser.urlencoded({ extended: true }));
 app.use("/api/v1/admin/auth", AdminAuthRouter);
 app.use("/api/v1/allUser", allUserRouter);
 app.use("/api/v1/custommer", custommerRouter);
+app.use("/api/v1/businessAccount", businessAccountRouter);
 // Swagger documentation
 swaggerDocs(app);
 
