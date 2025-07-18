@@ -46,11 +46,11 @@ app.use(
 
 // Proxy configuration
 app.use(
-  "/api/auth",
+  "/auth",
   proxy("http://localhost:5000", {
-    proxyReqPathResolver: (req) => {
-      return `/api/v1/Ad_water-supply/Admin/auth${req.url}`;
-    },
+    // proxyReqPathResolver: (req) => {
+    //   return `/api/v1/Ad_water-supply/Admin/auth${req.url}`;
+    // },
     proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
       proxyReqOpts.timeout = 10000; // 10 second timeout
       return proxyReqOpts;

@@ -1,12 +1,13 @@
 import express from "express";
 import bodyParser from "body-parser";
-import adminAuthRouter from "./routes/public/admin/Admin.auth.routes";
 import { dbConnect } from "../../../db/dbConnect";
 import { swaggerDocs } from "./Swagger";
 import dotenv from "dotenv";
 import { errorMiddleware } from "../../../packages/error_handler/error_middleware";
-import allUserRouter from "./routes/public/All/alluser.routes";
-import custommerRouter from "./routes/public/custommer/custommer.routes";
+import allUserRouter from "./routes/public/user/All/alluser.routes";
+import AdminAuthRouter from "./routes/public/user/admin/Admin.auth.routes";
+import custommerRouter from "./routes/public/user/custommer/custommer.routes";
+import businessAccountRouter from "./routes/public/user/businessAccount/businessAccount.auth.routes";
 
 dotenv.config();
 const app = express();
@@ -22,9 +23,10 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 
 // Routes
-app.use("/api/v1/admin/auth", adminAuthRouter);
+app.use("/api/v1/admin/auth", AdminAuthRouter);
 app.use("/api/v1/allUser", allUserRouter);
 app.use("/api/v1/custommer", custommerRouter);
+app.use("/api/v1/businessAccount", businessAccountRouter);
 // Swagger documentation
 swaggerDocs(app);
 

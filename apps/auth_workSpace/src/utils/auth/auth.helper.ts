@@ -4,6 +4,103 @@ import crypto from "crypto";
 import { ValidationError } from "../../../../../packages/error_handler";
 import { NextFunction } from "express";
 
+// auth.helper.ts
+// auth.helper.ts
+interface BusinessRegistrationData {
+  verificationToken: string;
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+  roleInCompany: string;
+  permanentAddress: {
+    district: string;
+    province: string;
+    country: string;
+    zip: string;
+  };
+  temporaryAddress?: {
+    district: string;
+    province: string;
+    country: string;
+    zip: string;
+  };
+}
+
+export const validateBusinessRegistrationData = (
+  data: Partial<BusinessRegistrationData>
+): { valid: boolean; error?: ValidationError } => {
+  const requiredFields = [
+    'verificationToken',
+    'name',
+    'email',
+    'password',
+    'phone',
+    'roleInCompany',
+    'permanentAddress'
+  ];
+
+  // Check all required fields exist
+  for (const field of requiredFields) {
+    if (!data[field as keyof BusinessRegistrationData]) {
+      return {
+        valid: false,
+        error: new ValidationError(`${field} is required`, {
+          statusCode: 400,
+          errorCode: `MISSING_${field.toUpperCase()}`,
+        }),
+      };
+    }
+  }
+
+  // Validate email format
+  if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.email!)) {
+    return {
+      valid: false,
+      error: new ValidationError("Invalid email format", {
+        statusCode: 400,
+        errorCode: "INVALID_EMAIL",
+      }),
+    };
+  }
+
+  // Validate password strength
+  if (data.password!.length < 8) {
+    return {
+      valid: false,
+      error: new ValidationError("Password must be at least 8 characters", {
+        statusCode: 400,
+        errorCode: "WEAK_PASSWORD",
+      }),
+    };
+  }
+
+  // Validate phone number
+  if (!/^[0-9]{10,15}$/.test(data.phone!)) {
+    return {
+      valid: false,
+      error: new ValidationError("Invalid phone number", {
+        statusCode: 400,
+        errorCode: "INVALID_PHONE",
+      }),
+    };
+  }
+
+  // Validate permanent address
+  const address = data.permanentAddress!;
+  if (!address.district || !address.province || !address.country || !address.zip) {
+    return {
+      valid: false,
+      error: new ValidationError("Complete permanent address is required", {
+        statusCode: 400,
+        errorCode: "INVALID_ADDRESS",
+      }),
+    };
+  }
+
+  return { valid: true };
+};
+
 interface RegistrationData {
   name?: string;
   email?: string;
@@ -12,7 +109,6 @@ interface RegistrationData {
   accountType?: string;
   permanentAddress?: any;
 }
-
 
 export const validateRegistrationData = (
   data: Partial<RegistrationData> = {}

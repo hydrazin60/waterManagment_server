@@ -2,7 +2,7 @@ import e from "express";
 import {
   CreateAccount,
   verifyCustomerOTP,
-} from "../../../controllers/customer/Custommer.auth.controller";
+} from "../../../../controllers/customer/Custommer.auth.controller";
 
 const custommerRouter = e.Router();
 custommerRouter.post("/register", CreateAccount);

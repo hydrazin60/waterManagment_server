@@ -52,6 +52,7 @@ export interface IAdmin extends Document {
   email: string;
   password: string;
   phone: string;
+  accountType: "admin";
   role: "superadmin" | "admin" | "moderator" | "support" | "developer";
   permanentAddress: IAddress;
   temporaryAddress?: IAddress;
@@ -124,6 +125,7 @@ const AdminSchema = new Schema<IAdmin>(
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     phone: { type: String, required: true },
+    accountType: { type: String, default: "admin" },
     role: {
       type: String,
       required: true,

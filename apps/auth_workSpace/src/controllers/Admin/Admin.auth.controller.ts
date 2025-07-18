@@ -68,10 +68,10 @@ export const adminRegistrationInitiate = catchAsync(
 
 export const adminRegistrationComplete = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { name, email, password, phone, otp, role, permissions } = req.body;
+    const { name, email, password, phone, otp, role, permissions  } = req.body;
 
     // Validate all required fields
-    if (!name || !email || !password || !otp || !role) {
+    if (!name || !email || !password || !otp || !role ) {
       return next(
         new ValidationError("Missing required fields", {
           statusCode: 400,
