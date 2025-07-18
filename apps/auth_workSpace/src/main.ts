@@ -8,6 +8,8 @@ import allUserRouter from "./routes/public/user/All/alluser.routes";
 import AdminAuthRouter from "./routes/public/user/admin/Admin.auth.routes";
 import custommerRouter from "./routes/public/user/custommer/custommer.routes";
 import businessAccountRouter from "./routes/public/user/businessAccount/businessAccount.auth.routes";
+import allUserPrivateRouter from "./routes/private/user/All/allUser.private.routes";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 const app = express();
@@ -21,12 +23,13 @@ dbConnect().catch((err) => {
 // Middlewares
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-
+app.use(cookieParser());
 // Routes
 app.use("/api/v1/admin/auth", AdminAuthRouter);
 app.use("/api/v1/allUser", allUserRouter);
 app.use("/api/v1/custommer", custommerRouter);
 app.use("/api/v1/businessAccount", businessAccountRouter);
+app.use("/api/v1/alluser/private", allUserPrivateRouter);
 // Swagger documentation
 swaggerDocs(app);
 

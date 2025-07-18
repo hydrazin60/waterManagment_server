@@ -97,3 +97,26 @@ export const login = catchAsync(
     res.status(200).json(responseData);
   }
 );
+
+export const LogOut = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    res.clearCookie("accessToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+    });
+
+    res.clearCookie("refreshToken", {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === "production",
+      sameSite: "strict",
+      path: "/",
+    });
+    res.status(200).json({
+      success: true,
+      message: "Logged out successfully",
+    });
+    return res;
+  }
+);
