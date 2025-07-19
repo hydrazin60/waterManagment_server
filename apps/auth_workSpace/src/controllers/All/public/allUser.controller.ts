@@ -1,18 +1,18 @@
 import { NextFunction, Request, Response } from "express";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
-import { catchAsync } from "../../../../../packages/error_handler/error_middleware";
+import { catchAsync } from "../../../../../../packages/error_handler/error_middleware";
 import {
   findUserByEmail,
   getUserModelName,
   getUserRoleSpecificData,
   validateLoginData,
-} from "../../utils/auth/login.helper";
+} from "../../../utils/auth/login.helper";
 import {
   AuthError,
   ValidationError,
-} from "../../../../../packages/error_handler";
-import { setCookies } from "../../utils/cookies/setCookies";
+} from "../../../../../../packages/error_handler";
+import { setCookies } from "../../../utils/cookies/setCookies";
 
 export const login = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -95,28 +95,5 @@ export const login = catchAsync(
     };
 
     res.status(200).json(responseData);
-  }
-);
-
-export const LogOut = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
-    res.clearCookie("accessToken", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/",
-    });
-
-    res.clearCookie("refreshToken", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "strict",
-      path: "/",
-    });
-    res.status(200).json({
-      success: true,
-      message: "Logged out successfully",
-    });
-    return res;
   }
 );
