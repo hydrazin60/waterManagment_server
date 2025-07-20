@@ -1,8 +1,6 @@
 import e from "express";
-import {
-  CreateAccount,
-  verifyCustomerOTP,
-} from "../../../../controllers/customer/Custommer.auth.controller";
+import { CreateAccount, verifyCustomerOTP } from "../../../../controllers/user/customer/Custommer.auth.controller";
+ 
 
 const custommerRouter = e.Router();
 custommerRouter.post("/register", CreateAccount);

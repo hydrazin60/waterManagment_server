@@ -57,6 +57,18 @@ app.use(
     },
   })
 );
+app.use(
+  "/company",
+  proxy("http://localhost:3333", {
+    // proxyReqPathResolver: (req) => {
+    //   return `/api/v1/Ad_water-supply/Admin/auth${req.url}`;
+    // },
+    proxyReqOptDecorator: (proxyReqOpts, srcReq) => {
+      proxyReqOpts.timeout = 10000; // 10 second timeout
+      return proxyReqOpts;
+    },
+  })
+);
 
 // Static assets
 app.use("/assets", express.static(path.join(__dirname, "assets")));

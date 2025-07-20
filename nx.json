@@ -39,7 +39,8 @@
         "targetName": "test"
       },
       "exclude": [
-        "apps/auth_workSpace-e2e/**/*"
+        "apps/auth_workSpace-e2e/**/*",
+        "apps/company_workspace-e2e/**/*"
       ]
     },
     {

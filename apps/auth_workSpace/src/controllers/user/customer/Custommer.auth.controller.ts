@@ -1,18 +1,18 @@
-import { catchAsync } from "../../../../../packages/error_handler/error_middleware";
 import { NextFunction, Request, Response } from "express";
+import bcrypt from "bcrypt";
+import { catchAsync } from "../../../../../../packages/error_handler/error_middleware";
 import {
   checkOtpRestrictions,
   sendOTP,
   trackOTPRequests,
   validateRegistrationData,
   verifyOTP,
-} from "../../utils/auth/auth.helper";
-import CustomerUser from "../../../../../db/model/user/customer/CustomerUser.model";
-import { ValidationError } from "../../../../../packages/error_handler";
-import bcrypt from "bcrypt";
-import { Admin } from "../../../../../db/model/user/admin/Admin.model";
-import { BusinessUser } from "../../../../../db/model/user/BusinessUser/BusinessUser.model";
-import { Staff } from "../../../../../db/model/user/staff/staff.schema";
+} from "../../../utils/auth/auth.helper";
+import { ValidationError } from "../../../../../../packages/error_handler";
+import { Admin } from "../../../../../../db/model/user/admin/Admin.model";
+import { BusinessUser } from "../../../../../../db/model/user/BusinessUser/BusinessUser.model";
+import CustomerUser from "../../../../../../db/model/user/customer/CustomerUser.model";
+import { Staff } from "../../../../../../db/model/user/staff/staff.schema";
 
 export const CreateAccount = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
