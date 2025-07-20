@@ -1,20 +1,16 @@
 import { NextFunction, Request, Response } from "express";
-import { BusinessUser } from "../../../../../db/model/user/BusinessUser/BusinessUser.model";
-import { ValidationError } from "../../../../../packages/error_handler";
+ 
 import bcrypt from "bcrypt";
-import {
-  checkOtpRestrictions,
-  sendOTP,
-  trackOTPRequests,
-  verifyOTP,
-  validateBusinessRegistrationData,
-} from "../../utils/auth/auth.helper";
-import { catchAsync } from "../../../../../packages/error_handler/error_middleware";
-import { Admin } from "../../../../../db/model/user/admin/Admin.model";
-import CustomerUser from "../../../../../db/model/user/customer/CustomerUser.model";
-import { Staff } from "../../../../../db/model/user/staff/staff.schema";
-import redis from "../../../../../packages/redis";
+ 
 import crypto from "crypto";
+import { catchAsync } from "../../../../../../packages/error_handler/error_middleware";
+import { ValidationError } from "../../../../../../packages/error_handler";
+import { BusinessUser } from "../../../../../../db/model/user/BusinessUser/BusinessUser.model";
+import { checkOtpRestrictions, sendOTP, trackOTPRequests, validateBusinessRegistrationData, verifyOTP } from "../../../utils/auth/auth.helper";
+import { Admin } from "../../../../../../db/model/user/admin/Admin.model";
+import CustomerUser from "../../../../../../db/model/user/customer/CustomerUser.model";
+import { Staff } from "../../../../../../db/model/user/staff/staff.schema";
+import redis from "../../../../../../packages/redis";
 export const businessUserRegistrationInitiate = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { email, phone } = req.body;

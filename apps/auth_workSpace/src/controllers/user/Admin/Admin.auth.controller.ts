@@ -1,18 +1,13 @@
 import { NextFunction, Request, Response } from "express";
-import { Admin } from "../../../../../db/model/user/admin/Admin.model";
-import { ValidationError } from "../../../../../packages/error_handler";
+
 import bcrypt from "bcrypt";
-import {
-  checkOtpRestrictions,
-  sendOTP,
-  trackOTPRequests,
-  verifyOTP,
-  validateRegistrationData,
-} from "../../utils/auth/auth.helper";
-import { catchAsync } from "../../../../../packages/error_handler/error_middleware";
-import { BusinessUser } from "../../../../../db/model/user/BusinessUser/BusinessUser.model";
-import CustomerUser from "../../../../../db/model/user/customer/CustomerUser.model";
-import { Staff } from "../../../../../db/model/user/staff/staff.schema";
+import { catchAsync } from "../../../../../../packages/error_handler/error_middleware";
+import { checkOtpRestrictions, sendOTP, trackOTPRequests, validateRegistrationData, verifyOTP } from "../../../utils/auth/auth.helper";
+import { ValidationError } from "../../../../../../packages/error_handler";
+import { Admin } from "../../../../../../db/model/user/admin/Admin.model";
+import { BusinessUser } from "../../../../../../db/model/user/BusinessUser/BusinessUser.model";
+import CustomerUser from "../../../../../../db/model/user/customer/CustomerUser.model";
+import { Staff } from "../../../../../../db/model/user/staff/staff.schema";
 
 export const adminRegistrationInitiate = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -68,10 +63,10 @@ export const adminRegistrationInitiate = catchAsync(
 
 export const adminRegistrationComplete = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { name, email, password, phone, otp, role, permissions  } = req.body;
+    const { name, email, password, phone, otp, role, permissions } = req.body;
 
     // Validate all required fields
-    if (!name || !email || !password || !otp || !role ) {
+    if (!name || !email || !password || !otp || !role) {
       return next(
         new ValidationError("Missing required fields", {
           statusCode: 400,

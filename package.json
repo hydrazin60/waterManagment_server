@@ -68,6 +68,8 @@
     "webpack-cli": "^5.1.4"
   },
   "workspaces": [
-    "apps/*"
+    "apps/*",
+    "company_workspace",
+    "apps"
   ]
 }

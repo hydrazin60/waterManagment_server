@@ -11,6 +11,12 @@
     },
     {
       "path": "./apps/api-gateway"
+    },
+    {
+      "path": "./apps/company_workspace-e2e"
+    },
+    {
+      "path": "./apps/company_workspace"
     }
   ]
 }
