@@ -138,8 +138,8 @@ const ContactSchema = new Schema<IContact>({
 
 const OperatingHoursSchema = new Schema<IOperatingHours>({
   days: [{ type: String }],
-  openingTime: { type: String },
-  closingTime: { type: String },
+  openingTime: { type: String , default: "08:00"},
+  closingTime: { type: String  , default: "17:00"},
   is24Hours: { type: Boolean, default: false },
 });
 
