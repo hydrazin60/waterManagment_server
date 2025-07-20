@@ -15,10 +15,11 @@ dbConnect().catch((err) => {
 });
 
 // Middlewares
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
-app.use("/assets", express.static(path.join(__dirname, "assets")));
+
+app.use(bodyParser.json());  //  to support JSON-encoded bodies
+app.use(bodyParser.urlencoded({ extended: true })); // to support URL-encoded bodies
+app.use(cookieParser()); // to support cookies
+app.use("/assets", express.static(path.join(__dirname, "assets")));  // to serve static files
 app.use(errorMiddleware);
 
 app.get("/health", (req, res) => {

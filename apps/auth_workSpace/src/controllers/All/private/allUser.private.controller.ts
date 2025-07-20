@@ -7,8 +7,8 @@ import { BusinessUser } from "../../../../../../db/model/user/BusinessUser/Busin
 import CustomerUser from "../../../../../../db/model/user/customer/CustomerUser.model";
 import { Staff } from "../../../../../../db/model/user/staff/staff.schema";
 
-export const LogOut = catchAsync(
-  async (req: Request, res: Response, next: NextFunction) => {
+export const LogOut = catchAsync(       // logout
+  async (req: Request, res: Response, next: NextFunction) => { 
     res.clearCookie("accessToken", {
       httpOnly: true,
       secure: process.env.NODE_ENV === "production",
@@ -30,7 +30,7 @@ export const LogOut = catchAsync(
   }
 );
 
-export const GetOwnProfile = catchAsync(
+export const GetOwnProfile = catchAsync(    // get own profile
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user?.id;
     const userType = req.user?.type;
@@ -44,7 +44,7 @@ export const GetOwnProfile = catchAsync(
       );
     }
 
-    if (!userType) {
+    if (!userType) {   // if user type is missing
       return next(
         new ValidationError("User type missing in token", {
           statusCode: 400,
@@ -54,7 +54,7 @@ export const GetOwnProfile = catchAsync(
     }
 
     let userData = null;
-    switch (userType) {
+    switch (userType) {   // switch case
       case "admin":
         userData = await Admin.findById(userId).select("-password");
         break;

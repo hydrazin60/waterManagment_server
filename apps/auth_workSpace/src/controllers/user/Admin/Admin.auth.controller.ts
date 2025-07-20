@@ -9,7 +9,7 @@ import { BusinessUser } from "../../../../../../db/model/user/BusinessUser/Busin
 import CustomerUser from "../../../../../../db/model/user/customer/CustomerUser.model";
 import { Staff } from "../../../../../../db/model/user/staff/staff.schema";
 
-export const adminRegistrationInitiate = catchAsync(
+export const adminRegistrationInitiate = catchAsync(   // admin registration initiate
   async (req: Request, res: Response, next: NextFunction) => {
     const { valid, error } = validateRegistrationData(req.body);
     if (!valid && error) {
@@ -61,7 +61,7 @@ export const adminRegistrationInitiate = catchAsync(
   }
 );
 
-export const adminRegistrationComplete = catchAsync(
+export const adminRegistrationComplete = catchAsync(   // admin registration complete
   async (req: Request, res: Response, next: NextFunction) => {
     const { name, email, password, phone, otp, role, permissions } = req.body;
 

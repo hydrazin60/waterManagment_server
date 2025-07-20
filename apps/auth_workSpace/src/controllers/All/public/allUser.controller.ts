@@ -14,7 +14,7 @@ import {
 } from "../../../../../../packages/error_handler";
 import { setCookies } from "../../../utils/cookies/setCookies";
 
-export const login = catchAsync(
+export const login = catchAsync(      // login 
   async (req: Request, res: Response, next: NextFunction) => {
     const { valid, error } = validateLoginData(req.body);
     if (!valid && error) {
@@ -53,8 +53,8 @@ export const login = catchAsync(
       throw new Error("JWT_SECRET_KEY is not configured");
     }
 
-    // Common token payload
-    const tokenPayload = {
+    // Common token payload  
+    const tokenPayload = {   
       id: user._id,
       type: userType,
       email: user.email,

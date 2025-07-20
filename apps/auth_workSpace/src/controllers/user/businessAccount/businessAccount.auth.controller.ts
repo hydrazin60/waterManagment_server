@@ -154,7 +154,7 @@ export const verifyBusinessUserOTP = catchAsync(
 
 // businessAccount.auth.controller.ts
 // businessAccount.auth.controller.ts
-export const businessUserRegistrationComplete = catchAsync(
+export const businessUserRegistrationComplete = catchAsync(   // business user registration complete
   async (req: Request, res: Response, next: NextFunction) => {
     const { verificationToken, ...userData } = req.body;
 
