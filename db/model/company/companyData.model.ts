@@ -16,7 +16,7 @@ interface IAddress {
 interface IBankDetails {
   accountNumber: string;
   bankName: string;
-  branchName: string;
+  branchName?: string;
   accountHolderName: string;
   bankQRCode?: string;
   eSewaID?: string;
@@ -26,21 +26,12 @@ interface IBankDetails {
 }
 
 interface IIdentityDocuments {
-  registrationNumber: string;
+  registrationNumber?: string;
   registrationCertificate?: string;
   panNumber: string;
   panPhoto?: string;
   taxClearanceCertificate?: string;
   vatRegistrationCertificate?: string;
-}
-
-interface IBranch {
-  name: string;
-  address: IAddress;
-  contactPerson: string;
-  contactPhone: string;
-  contactEmail: string;
-  isMainBranch: boolean;
 }
 
 interface ISupplierReference {
@@ -65,15 +56,19 @@ export interface ICompany extends Document {
   // Basic Company Info
   companyName: string;
   legalName: string;
-  companyType: "supplier" | "manufacturer" | "distributor" | "retailer" | "service";
-  industry: "water" | "food" | "construction" | "textile" | "other";
+  companyType:
+    | "supplier"
+    | "manufacturer"
+    | "distributor"
+    | "retailer"
+    | "service";
+  industry: "water" | "other";
   companyLogo?: string;
   companyWebsite?: string;
   companyDescription?: string;
   foundingDate?: Date;
 
   // Business Registration
-  registrationNumber: string;
   taxIdentificationNumber: string;
   vatNumber?: string;
   identityDocuments: IIdentityDocuments;
@@ -89,14 +84,11 @@ export interface ICompany extends Document {
   };
 
   // Addresses
-  registeredAddress: IAddress;
   operationalAddress: IAddress;
-  branches: IBranch[];
-  warehouseLocations: IAddress[];
+  warehouseLocations?: IAddress[];
 
   // Financial Information
   bankDetails: IBankDetails[];
-  creditTerms?: string;
   paymentMethods: string[];
 
   // Business Relationships
@@ -112,7 +104,7 @@ export interface ICompany extends Document {
   expenseInvoices: Types.ObjectId[]; // Reference to ExpenseInvoice model
   rawMaterials: Types.ObjectId[]; // Reference to InventoryItem model (type: rawMaterial)
   finishedProducts: Types.ObjectId[]; // Reference to InventoryItem model (type: finishedProduct)
-
+  branches: Types.ObjectId[]; // Reference to Branch model
   // Business Operations
   operatingHours?: {
     days: string[];
@@ -129,7 +121,6 @@ export interface ICompany extends Document {
   verificationNotes?: string;
   isActive: boolean;
   isPremium: boolean;
-
   // Metadata
   createdAt: Date;
   updatedAt: Date;
@@ -152,7 +143,7 @@ const AddressSchema = new Schema<IAddress>({
 const BankDetailsSchema = new Schema<IBankDetails>({
   accountNumber: { type: String, required: true },
   bankName: { type: String, required: true },
-  branchName: { type: String, required: true },
+  branchName: { type: String },
   accountHolderName: { type: String, required: true },
   bankQRCode: { type: String },
   eSewaID: { type: String },
@@ -162,21 +153,12 @@ const BankDetailsSchema = new Schema<IBankDetails>({
 });
 
 const IdentityDocumentsSchema = new Schema<IIdentityDocuments>({
-  registrationNumber: { type: String, required: true },
+  registrationNumber: { type: String },
   registrationCertificate: { type: String },
   panNumber: { type: String, required: true },
   panPhoto: { type: String },
   taxClearanceCertificate: { type: String },
   vatRegistrationCertificate: { type: String },
-});
-
-const BranchSchema = new Schema<IBranch>({
-  name: { type: String, required: true },
-  address: { type: AddressSchema, required: true },
-  contactPerson: { type: String, required: true },
-  contactPhone: { type: String, required: true },
-  contactEmail: { type: String, required: true },
-  isMainBranch: { type: Boolean, default: false },
 });
 
 const SupplierReferenceSchema = new Schema<ISupplierReference>({
@@ -238,7 +220,6 @@ const CompanySchema = new Schema<ICompany>(
     foundingDate: { type: Date },
 
     // Business Registration
-    registrationNumber: { type: String, required: true },
     taxIdentificationNumber: { type: String, required: true },
     vatNumber: { type: String },
     identityDocuments: { type: IdentityDocumentsSchema, required: true },
@@ -254,14 +235,11 @@ const CompanySchema = new Schema<ICompany>(
     },
 
     // Addresses
-    registeredAddress: { type: AddressSchema, required: true },
     operationalAddress: { type: AddressSchema, required: true },
-    branches: [BranchSchema],
     warehouseLocations: [AddressSchema],
 
     // Financial Information
     bankDetails: [BankDetailsSchema],
-    creditTerms: { type: String },
     paymentMethods: [{ type: String }],
 
     // Business Relationships
@@ -277,12 +255,12 @@ const CompanySchema = new Schema<ICompany>(
     expenseInvoices: [{ type: Schema.Types.ObjectId, ref: "ExpenseInvoice" }],
     rawMaterials: [{ type: Schema.Types.ObjectId, ref: "InventoryItem" }],
     finishedProducts: [{ type: Schema.Types.ObjectId, ref: "InventoryItem" }],
-
+    branches: [{ type: Schema.Types.ObjectId, ref: "Branch" }],
     // Business Operations
     operatingHours: {
       days: [{ type: String }],
-      openingTime: { type: String },
-      closingTime: { type: String },
+      openingTime: { type: String, default: "08:00" },
+      closingTime: { type: String, default: "17:00" },
     },
     deliveryRadius: { type: Number },
     deliveryFee: { type: Number },
