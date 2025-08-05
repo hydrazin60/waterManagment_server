@@ -1,6 +1,6 @@
-import { Admin } from "../../../../../db/model/user/admin/Admin.model";
-import { BusinessUser } from "../../../../../db/model/user/BusinessUser/BusinessUser.model";
-import CustomerUser from "../../../../../db/model/user/customer/CustomerUser.model";
+import { Admin } from "../db/model/user/admin/Admin.model";
+import { BusinessUser } from "../db/model/user/BusinessUser/BusinessUser.model";
+import CustomerUser from "../db/model/user/customer/CustomerUser.model";
 
 const findUserById = async (userId: string) => {
   let user = await Admin.findById(userId);

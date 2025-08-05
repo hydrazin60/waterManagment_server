@@ -1,12 +1,18 @@
 import { NextFunction, Request, Response } from "express";
- 
+
 import bcrypt from "bcrypt";
- 
+
 import crypto from "crypto";
 import { catchAsync } from "../../../../../../packages/error_handler/error_middleware";
 import { ValidationError } from "../../../../../../packages/error_handler";
 import { BusinessUser } from "../../../../../../db/model/user/BusinessUser/BusinessUser.model";
-import { checkOtpRestrictions, sendOTP, trackOTPRequests, validateBusinessRegistrationData, verifyOTP } from "../../../utils/auth/auth.helper";
+import {
+  checkOtpRestrictions,
+  sendOTP,
+  trackOTPRequests,
+  validateBusinessRegistrationData,
+  verifyOTP,
+} from "../../../utils/auth/auth.helper";
 import { Admin } from "../../../../../../db/model/user/admin/Admin.model";
 import CustomerUser from "../../../../../../db/model/user/customer/CustomerUser.model";
 import { Staff } from "../../../../../../db/model/user/staff/staff.schema";
@@ -154,7 +160,8 @@ export const verifyBusinessUserOTP = catchAsync(
 
 // businessAccount.auth.controller.ts
 // businessAccount.auth.controller.ts
-export const businessUserRegistrationComplete = catchAsync(   // business user registration complete
+export const businessUserRegistrationComplete = catchAsync(
+  // business user registration complete
   async (req: Request, res: Response, next: NextFunction) => {
     const { verificationToken, ...userData } = req.body;
 
@@ -227,7 +234,7 @@ export const businessUserRegistrationComplete = catchAsync(   // business user r
 
       res.status(201).json({
         success: true,
-        message: "Business registration completed",
+        message: "Business user  registration completed",
         data: responseData,
       });
     } catch (err) {
