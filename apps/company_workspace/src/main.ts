@@ -1,9 +1,12 @@
-import bodyParser from "body-parser";
-import cookieParser from "cookie-parser";
 import express from "express";
-import * as path from "path";
+import helmet from "helmet";
+import cors from "cors";
+import morgan from "morgan";
+import cookieParser from "cookie-parser";
 import { dbConnect } from "../../../db/dbConnect";
 import { errorMiddleware } from "../../../packages/error_handler/error_middleware";
+import companyRouter from "./routes/company.route";
+import * as path from "path";
 
 const app = express();
 const port = process.env.PORT || 3333;
@@ -14,23 +17,44 @@ dbConnect().catch((err) => {
   process.exit(1);
 });
 
-// Middlewares
+// Security Middlewares
+app.use(helmet());
+app.use(
+  cors({
+    origin: process.env.ALLOWED_ORIGINS?.split(",") || "*",
+    credentials: true,
+  })
+);
 
-app.use(bodyParser.json());  //  to support JSON-encoded bodies
-app.use(bodyParser.urlencoded({ extended: true })); // to support URL-encoded bodies
-app.use(cookieParser()); // to support cookies
-app.use("/assets", express.static(path.join(__dirname, "assets")));  // to serve static files
+// Request logging
+app.use(morgan("dev"));
+
+// Body parsing middleware (updated)
+app.use(express.json({ limit: "10kb" }));
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 app.use(errorMiddleware);
+// Static files
+app.use("/assets", express.static(path.join(__dirname, "assets")));
 
+// Health check endpoint
 app.get("/health", (req, res) => {
-  res.send({ message: "OK!" });
+  res.status(200).json({ status: "healthy" });
 });
 
-app
-  .listen(port, () => {
-    console.log(`Company_Workspace running on port ${port}`);
-  })
-  .on("error", (err) => {
-    console.error("company_workspace failed to start:", err);
-    process.exit(1);
-  });
+// API routes
+app.use("/api/v1", companyRouter);
+
+// Error handling middleware (should be last)
+
+const server = app.listen(port, () => {
+  console.log(`Company Service running on port ${port}`);
+});
+
+// Handle unhandled promise rejections
+process.on("unhandledRejection", (err: Error) => {
+  console.error("Unhandled Rejection:", err);
+  server.close(() => process.exit(1));
+});
+
+export default app;
