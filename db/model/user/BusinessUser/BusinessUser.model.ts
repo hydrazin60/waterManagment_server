@@ -3,7 +3,6 @@ import mongoose, { Document, Schema, Types } from "mongoose";
 // ====================== COMMON INTERFACES ======================
 interface IAddress {
   district: string;
-  municipality?: string;
   city?: string;
   tole?: string;
   nearFamousPlace?: string;
@@ -28,6 +27,9 @@ interface IBankDetails {
 interface IIdentityDocuments {
   citizenshipNumber?: string;
   citizenshipPhoto?: string;
+  drivingLicenseNumber?: string;
+  nationalIdNumber?: string;
+  passportNumber?: string;
   panNumber?: string;
   panPhoto?: string;
 }
@@ -47,7 +49,6 @@ export interface IBusinessUser extends Document {
   phone: string;
   profileImage?: string;
   accountType: "business";
-  dateOfBirth?: Date;
   gender?: "male" | "female" | "other" | "prefer-not-to-say";
   emergencyContact?: {
     name: string;
@@ -61,14 +62,6 @@ export interface IBusinessUser extends Document {
   // Authentication & Security
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
-  twoFactorEnabled: boolean;
-  lastLogin?: Date;
-  loginIP?: string;
-  loginHistory?: Array<{
-    ip: string;
-    device: string;
-    timestamp: Date;
-  }>;
   resetPasswordToken?: string;
   resetPasswordExpire?: Date;
 
@@ -103,7 +96,6 @@ export interface IBusinessUser extends Document {
 // ====================== SUB-SCHEMAS ======================
 const AddressSchema = new Schema<IAddress>({
   district: { type: String },
-  municipality: { type: String },
   city: { type: String },
   tole: { type: String },
   nearFamousPlace: { type: String },
@@ -128,6 +120,9 @@ const BankDetailsSchema = new Schema<IBankDetails>({
 const IdentityDocumentsSchema = new Schema<IIdentityDocuments>({
   citizenshipNumber: { type: String },
   citizenshipPhoto: { type: String },
+  drivingLicenseNumber: { type: String },
+  nationalIdNumber: { type: String },
+  passportNumber: { type: String },
   panNumber: { type: String },
   panPhoto: { type: String },
 });
@@ -148,7 +143,6 @@ const BusinessUserSchema = new Schema<IBusinessUser>(
     phone: { type: String, required: true, unique: true },
     accountType: { type: String, default: "business" },
     profileImage: { type: String },
-    dateOfBirth: { type: Date },
     gender: {
       type: String,
       enum: ["male", "female", "other", "prefer-not-to-say"],
@@ -165,16 +159,6 @@ const BusinessUserSchema = new Schema<IBusinessUser>(
     // Authentication & Security
     isEmailVerified: { type: Boolean, default: false },
     isPhoneVerified: { type: Boolean, default: false },
-    twoFactorEnabled: { type: Boolean, default: false },
-    lastLogin: { type: Date },
-    loginIP: { type: String },
-    loginHistory: [
-      {
-        ip: { type: String },
-        device: { type: String },
-        timestamp: { type: Date, default: Date.now },
-      },
-    ],
     resetPasswordToken: { type: String },
     resetPasswordExpire: { type: Date },
 

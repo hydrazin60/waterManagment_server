@@ -26,6 +26,8 @@ interface IBankDetails {
 }
 
 interface IIdentityDocuments {
+  taxIdentificationNumber?: string;
+  vatNumber?: string;
   registrationNumber?: string;
   registrationCertificate?: string;
   panNumber: string;
@@ -34,21 +36,14 @@ interface IIdentityDocuments {
   vatRegistrationCertificate?: string;
 }
 
-interface ISupplierReference {
-  supplier: Types.ObjectId; // Reference to Supplier or Company
-  supplierModel: "Supplier" | "Company";
-  materialType: string;
-  contractStartDate: Date;
-  contractEndDate?: Date;
-  terms: string;
+interface ISupplierSimple {
+  _id: Types.ObjectId;
+  name: string;
 }
 
-interface ICustomerReference {
-  customer: Types.ObjectId; // Reference to Customer or Company
-  customerModel: "Customer" | "Company";
-  customerType: "retail" | "wholesale" | "institutional";
-  discountRate?: number;
-  creditTerms?: string;
+interface ICustomerSimple {
+  _id: Types.ObjectId;
+  name: string;
 }
 
 // ====================== COMPANY SCHEMA ======================
@@ -69,8 +64,7 @@ export interface ICompany extends Document {
   foundingDate?: Date;
 
   // Business Registration
-  taxIdentificationNumber: string;
-  vatNumber?: string;
+
   identityDocuments: IIdentityDocuments;
 
   // Contact Information
@@ -84,7 +78,7 @@ export interface ICompany extends Document {
   };
 
   // Addresses
-  operationalAddress: IAddress;
+  operationalAddress: IAddress[];
   warehouseLocations?: IAddress[];
 
   // Financial Information
@@ -92,8 +86,8 @@ export interface ICompany extends Document {
   paymentMethods: string[];
 
   // Business Relationships
-  suppliers: ISupplierReference[];
-  customers: ICustomerReference[];
+  suppliers: ISupplierSimple[];
+  customers: ICustomerSimple[];
 
   // References to other collections
   employees: Types.ObjectId[]; // Reference to Employee model
@@ -105,6 +99,7 @@ export interface ICompany extends Document {
   rawMaterials: Types.ObjectId[]; // Reference to InventoryItem model (type: rawMaterial)
   finishedProducts: Types.ObjectId[]; // Reference to InventoryItem model (type: finishedProduct)
   branches: Types.ObjectId[]; // Reference to Branch model
+
   // Business Operations
   operatingHours?: {
     days: string[];
@@ -121,6 +116,7 @@ export interface ICompany extends Document {
   verificationNotes?: string;
   isActive: boolean;
   isPremium: boolean;
+
   // Metadata
   createdAt: Date;
   updatedAt: Date;
@@ -153,6 +149,8 @@ const BankDetailsSchema = new Schema<IBankDetails>({
 });
 
 const IdentityDocumentsSchema = new Schema<IIdentityDocuments>({
+  taxIdentificationNumber: { type: String },
+  vatNumber: { type: String },
   registrationNumber: { type: String },
   registrationCertificate: { type: String },
   panNumber: { type: String, required: true },
@@ -161,41 +159,14 @@ const IdentityDocumentsSchema = new Schema<IIdentityDocuments>({
   vatRegistrationCertificate: { type: String },
 });
 
-const SupplierReferenceSchema = new Schema<ISupplierReference>({
-  supplier: {
-    type: Schema.Types.ObjectId,
-    refPath: "suppliers.supplierModel",
-    required: true,
-  },
-  supplierModel: {
-    type: String,
-    required: true,
-    enum: ["Supplier", "Company"],
-  },
-  materialType: { type: String, required: true },
-  contractStartDate: { type: Date, required: true },
-  contractEndDate: { type: Date },
-  terms: { type: String },
+const SupplierSimpleSchema = new Schema<ISupplierSimple>({
+  _id: { type: Schema.Types.ObjectId, required: true },
+  name: { type: String, required: true },
 });
 
-const CustomerReferenceSchema = new Schema<ICustomerReference>({
-  customer: {
-    type: Schema.Types.ObjectId,
-    refPath: "customers.customerModel",
-    required: true,
-  },
-  customerModel: {
-    type: String,
-    required: true,
-    enum: ["Customer", "Company"],
-  },
-  customerType: {
-    type: String,
-    required: true,
-    enum: ["retail", "wholesale", "institutional"],
-  },
-  discountRate: { type: Number },
-  creditTerms: { type: String },
+const CustomerSimpleSchema = new Schema<ICustomerSimple>({
+  _id: { type: Schema.Types.ObjectId, required: true },
+  name: { type: String, required: true },
 });
 
 // ====================== MAIN SCHEMA ======================
@@ -212,7 +183,7 @@ const CompanySchema = new Schema<ICompany>(
     industry: {
       type: String,
       required: true,
-      enum: ["water", "food", "construction", "textile", "other"],
+      enum: ["water", "other"],
     },
     companyLogo: { type: String },
     companyWebsite: { type: String },
@@ -220,8 +191,7 @@ const CompanySchema = new Schema<ICompany>(
     foundingDate: { type: Date },
 
     // Business Registration
-    taxIdentificationNumber: { type: String, required: true },
-    vatNumber: { type: String },
+
     identityDocuments: { type: IdentityDocumentsSchema, required: true },
 
     // Contact Information
@@ -235,16 +205,16 @@ const CompanySchema = new Schema<ICompany>(
     },
 
     // Addresses
-    operationalAddress: { type: AddressSchema, required: true },
+    operationalAddress: { type: [AddressSchema], required: true },
     warehouseLocations: [AddressSchema],
 
     // Financial Information
-    bankDetails: [BankDetailsSchema],
-    paymentMethods: [{ type: String }],
+    bankDetails: { type: [BankDetailsSchema], required: true },
+    paymentMethods: [{ type: String, required: true }],
 
     // Business Relationships
-    suppliers: [SupplierReferenceSchema],
-    customers: [CustomerReferenceSchema],
+    suppliers: { type: [SupplierSimpleSchema], default: [] },
+    customers: { type: [CustomerSimpleSchema], default: [] },
 
     // References to other collections
     employees: [{ type: Schema.Types.ObjectId, ref: "Employee" }],
@@ -256,6 +226,7 @@ const CompanySchema = new Schema<ICompany>(
     rawMaterials: [{ type: Schema.Types.ObjectId, ref: "InventoryItem" }],
     finishedProducts: [{ type: Schema.Types.ObjectId, ref: "InventoryItem" }],
     branches: [{ type: Schema.Types.ObjectId, ref: "Branch" }],
+
     // Business Operations
     operatingHours: {
       days: [{ type: String }],
@@ -289,10 +260,8 @@ const CompanySchema = new Schema<ICompany>(
 
 // ====================== INDEXES ======================
 CompanySchema.index({ companyName: 1 }, { unique: true });
-CompanySchema.index({ registrationNumber: 1 }, { unique: true });
 CompanySchema.index({ taxIdentificationNumber: 1 }, { unique: true });
 CompanySchema.index({ companyType: 1, industry: 1 });
-CompanySchema.index({ "registeredAddress.district": 1 });
 CompanySchema.index({ "operationalAddress.district": 1 });
 CompanySchema.index({ verificationStatus: 1 });
 CompanySchema.index({ isActive: 1, isPremium: 1 });
