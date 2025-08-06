@@ -12,13 +12,8 @@ interface IInvoiceItem {
   taxRate: number;
   discount: number;
   totalAmount: number;
-  batchNumber?: string; // For raw materials
-  expiryDate?: Date; // For perishable items
-  waterQualityParams?: {
-    phLevel?: number;
-    tdsLevel?: number;
-    turbidity?: number;
-  };
+  batchNumber?: string; // optional, for raw materials
+  expiryDate?: Date; // optional, for perishable items
 }
 
 interface IPaymentInfo {
@@ -35,39 +30,28 @@ interface IShipmentInfo {
   deliveryDate: Date;
   carrier?: string;
   trackingNumber?: string;
-  receivedBy: Types.ObjectId; // Reference to Worker
-  storageLocation: Types.ObjectId; // Reference to WarehouseLocation
+  receivedBy: Types.ObjectId; // Worker reference
+  storageLocation: Types.ObjectId; // WarehouseLocation reference
   transportConditions?: {
     temperature?: string;
     humidity?: string;
   };
 }
 
-// ====================== PURCHASE INVOICE SCHEMA ======================
 export interface IPurchaseInvoice extends Document {
-  // Invoice Identification
-  invoiceNumber: string;
-  ownInvoiceNumber: string; // Internal reference number
-  supplierInvoiceNumber?: string;
-  isProforma: boolean;
-
-  // Supplier Information
-  supplier: Types.ObjectId; // Reference to Supplier or Company
+  invoiceNumber: string; // Invoice number from supplier
+  ownInvoiceNumber: string; // Internal invoice number, unique
+  supplier: Types.ObjectId;
+  supplierName: string; // Supplier reference (Supplier model)
   supplierModel: "Supplier" | "Company";
-  supplierContactPerson?: string;
-  supplierContactPhone?: string;
+  branch: Types.ObjectId; // Branch reference (Branch model)
+  department?: string; // Optional
 
-  // Company Information
-  company: Types.ObjectId; // Reference to Company
-  branch: Types.ObjectId; // Reference to Branch
-  department?: string;
-
-  // Transaction Details
   invoiceDate: Date;
   deliveryDate: Date;
   dueDate: Date;
-  paymentTerms: string;
-  currency: string;
+  paymentTerms: string; // e.g., "Net 15", "Immediate"
+
   subtotal: number;
   totalTax: number;
   totalDiscount: number;
@@ -77,38 +61,21 @@ export interface IPurchaseInvoice extends Document {
   amountPaid: number;
   balanceDue: number;
 
-  // Items Purchased
   items: IInvoiceItem[];
 
-  // Water-Specific Purchases
-  waterTestReports?: string[]; // Links to test reports
-  certificationDocuments?: string[]; // Links to certs
-
-  // Payment Information
   payments: IPaymentInfo[];
   paymentStatus: "unpaid" | "partial" | "paid" | "overdue";
 
-  // Shipping/Receiving
   shipment: IShipmentInfo;
   isReceived: boolean;
   receiptNotes?: string;
-
-  // Quality Control
-  qualityCheck?: {
-    passed: boolean;
-    checkedBy: Types.ObjectId; // Reference to Worker
-    checkDate: Date;
-    notes?: string;
-  };
-
-  // Approval Workflow
+  expectedBalancePaymentDate: Date;
   approvalStatus: "pending" | "approved" | "rejected";
-  approvedBy?: Types.ObjectId; // Reference to BusinessUser
+  approvedBy?: Types.ObjectId; // BusinessUser reference
   approvalDate?: Date;
 
-  // Metadata
-  createdBy: Types.ObjectId; // Reference to BusinessUser
-  updatedBy?: Types.ObjectId; // Reference to BusinessUser
+  createdBy: Types.ObjectId; // BusinessUser reference
+  updatedBy?: Types.ObjectId; // BusinessUser reference
   notes?: string;
 }
 
@@ -133,16 +100,11 @@ const InvoiceItemSchema = new Schema<IInvoiceItem>({
   quantity: { type: Number, required: true },
   unit: { type: String, required: true },
   unitPrice: { type: Number, required: true },
-  taxRate: { type: Number, default: 13 }, // Default VAT rate for Nepal
+  taxRate: { type: Number, default: 13 },
   discount: { type: Number, default: 0 },
   totalAmount: { type: Number, required: true },
   batchNumber: { type: String },
   expiryDate: { type: Date },
-  waterQualityParams: {
-    phLevel: { type: Number },
-    tdsLevel: { type: Number },
-    turbidity: { type: Number },
-  },
 });
 
 const PaymentInfoSchema = new Schema<IPaymentInfo>({
@@ -170,7 +132,7 @@ const ShipmentInfoSchema = new Schema<IShipmentInfo>({
   },
   storageLocation: {
     type: Schema.Types.ObjectId,
-    ref: "WarehouseLocation",
+    ref: "WarehouseLocation", // ✅ Correct if it's a separate model
     required: true,
   },
   transportConditions: {
@@ -179,59 +141,31 @@ const ShipmentInfoSchema = new Schema<IShipmentInfo>({
   },
 });
 
-const QualityCheckSchema = new Schema({
-  passed: { type: Boolean, required: true },
-  checkedBy: {
-    type: Schema.Types.ObjectId,
-    ref: "Worker",
-    required: true,
-  },
-  checkDate: { type: Date, required: true },
-  notes: { type: String },
-});
-
 // ====================== MAIN SCHEMA ======================
 const PurchaseInvoiceSchema = new Schema<IPurchaseInvoice>(
   {
-    // Invoice Identification
     invoiceNumber: { type: String, required: true },
     ownInvoiceNumber: { type: String, required: true, unique: true },
-    supplierInvoiceNumber: { type: String },
-    isProforma: { type: Boolean, default: false },
 
-    // Supplier Information
     supplier: {
       type: Schema.Types.ObjectId,
-      refPath: "supplierModel",
       required: true,
+      refPath: "supplierModel",
     },
     supplierModel: {
       type: String,
       required: true,
       enum: ["Supplier", "Company"],
     },
-    supplierContactPerson: { type: String },
-    supplierContactPhone: { type: String },
-
-    // Company Information
-    company: {
-      type: Schema.Types.ObjectId,
-      ref: "Company",
-      required: true,
-    },
-    branch: {
-      type: Schema.Types.ObjectId,
-      ref: "Branch",
-      required: true,
-    },
+    branch: { type: Schema.Types.ObjectId, ref: "Branch", required: true },
+    supplierName: { type: String, required: true },
     department: { type: String },
 
-    // Transaction Details
     invoiceDate: { type: Date, required: true, default: Date.now },
     deliveryDate: { type: Date, required: true },
     dueDate: { type: Date, required: true },
     paymentTerms: { type: String, default: "Immediate" },
-    currency: { type: String, default: "NPR" },
+
     subtotal: { type: Number, required: true },
     totalTax: { type: Number, required: true },
     totalDiscount: { type: Number, required: true },
@@ -240,15 +174,9 @@ const PurchaseInvoiceSchema = new Schema<IPurchaseInvoice>(
     grandTotal: { type: Number, required: true },
     amountPaid: { type: Number, default: 0 },
     balanceDue: { type: Number, required: true },
-
-    // Items Purchased
+    expectedBalancePaymentDate: { type: Date },
     items: [InvoiceItemSchema],
 
-    // Water-Specific Purchases
-    waterTestReports: [{ type: String }],
-    certificationDocuments: [{ type: String }],
-
-    // Payment Information
     payments: [PaymentInfoSchema],
     paymentStatus: {
       type: String,
@@ -256,15 +184,9 @@ const PurchaseInvoiceSchema = new Schema<IPurchaseInvoice>(
       default: "unpaid",
     },
 
-    // Shipping/Receiving
     shipment: { type: ShipmentInfoSchema, required: true },
     isReceived: { type: Boolean, default: false },
     receiptNotes: { type: String },
-
-    // Quality Control
-    qualityCheck: { type: QualityCheckSchema },
-
-    // Approval Workflow
     approvalStatus: {
       type: String,
       enum: ["pending", "approved", "rejected"],
@@ -273,7 +195,6 @@ const PurchaseInvoiceSchema = new Schema<IPurchaseInvoice>(
     approvedBy: { type: Schema.Types.ObjectId, ref: "BusinessUser" },
     approvalDate: { type: Date },
 
-    // Metadata
     createdBy: {
       type: Schema.Types.ObjectId,
       ref: "BusinessUser",
@@ -299,10 +220,8 @@ PurchaseInvoiceSchema.index({ "shipment.receivedBy": 1 });
 
 // ====================== HOOKS ======================
 PurchaseInvoiceSchema.pre<IPurchaseInvoice>("save", function (next) {
-  // Calculate balance due before saving
   this.balanceDue = this.grandTotal - this.amountPaid;
 
-  // Update payment status
   if (this.balanceDue <= 0) {
     this.paymentStatus = "paid";
   } else if (this.amountPaid > 0) {

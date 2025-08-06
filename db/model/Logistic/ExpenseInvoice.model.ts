@@ -4,14 +4,27 @@ import mongoose, { Document, Schema, Types } from "mongoose";
 
 interface IExpenseItem {
   description: string; // e.g., "Diesel purchase", "Office rent"
-  category: "transport" | "rent" | "utilities" | "supplies" | "salary" | "maintenance" | "other";
+  category:
+    | "transport"
+    | "rent"
+    | "utilities"
+    | "supplies"
+    | "salary"
+    | "maintenance"
+    | "other";
   amount: number;
   taxRate?: number; // Optional VAT
   vendor?: string; // Optional vendor name
 }
 
 interface IExpensePayment {
-  paymentMethod: "cash" | "bankTransfer" | "eSewa" | "khalti" | "card" | "cheque";
+  paymentMethod:
+    | "cash"
+    | "bankTransfer"
+    | "eSewa"
+    | "khalti"
+    | "card"
+    | "cheque";
   amountPaid: number;
   transactionId?: string;
   paymentDate: Date;
@@ -28,16 +41,17 @@ export interface IExpenseInvoice extends Document {
   items: IExpenseItem[];
   subtotal: number;
   totalTax: number;
+  discount: number;
   totalAmount: number;
   purpose: string; // Summary (e.g., "Monthly fuel purchase")
   expenseDate: Date;
-
+  expectedBalancePaymentDate: Date;
   // Payment Info
   payments: IExpensePayment[];
   amountPaid: number;
   balanceDue: number;
   paymentStatus: "unpaid" | "partial" | "paid";
-
+  isComplidePayment: boolean;
   // Optional Info
   vendorName?: string;
   notes?: string;
@@ -55,7 +69,15 @@ const ExpenseItemSchema = new Schema<IExpenseItem>({
   description: { type: String, required: true },
   category: {
     type: String,
-    enum: ["transport", "rent", "utilities", "supplies", "salary", "maintenance", "other"],
+    enum: [
+      "transport",
+      "rent",
+      "utilities",
+      "supplies",
+      "salary",
+      "maintenance",
+      "other",
+    ],
     required: true,
   },
   amount: { type: Number, required: true },
@@ -92,11 +114,11 @@ const ExpenseInvoiceSchema = new Schema<IExpenseInvoice>(
     items: { type: [ExpenseItemSchema], required: true },
     subtotal: { type: Number, required: true },
     totalTax: { type: Number, default: 0 },
+    discount: { type: Number, default: 0 },
     totalAmount: { type: Number, required: true },
-
     purpose: { type: String, required: true },
     expenseDate: { type: Date, default: Date.now },
-
+    expectedBalancePaymentDate: { type: Date },
     payments: [ExpensePaymentSchema],
     amountPaid: { type: Number, default: 0 },
     balanceDue: { type: Number, required: true },
@@ -105,11 +127,16 @@ const ExpenseInvoiceSchema = new Schema<IExpenseInvoice>(
       enum: ["unpaid", "partial", "paid"],
       default: "unpaid",
     },
+    isComplidePayment: { type: Boolean, default: false },
 
     vendorName: { type: String },
     notes: { type: String },
 
-    createdBy: { type: Schema.Types.ObjectId, ref: "BusinessUser", required: true },
+    createdBy: {
+      type: Schema.Types.ObjectId,
+      ref: "BusinessUser",
+      required: true,
+    },
     updatedBy: { type: Schema.Types.ObjectId, ref: "BusinessUser" },
   },
   { timestamps: true }

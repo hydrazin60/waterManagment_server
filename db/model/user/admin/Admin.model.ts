@@ -1,5 +1,6 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 
+// ---------------- Interfaces ----------------
 interface IAdminAccess {
   dashboard: boolean;
   userManagement: boolean;
@@ -21,8 +22,18 @@ interface IAddress {
   nearFamousPlace?: string;
   country: string;
   province: string;
-  zip: string;
   coordinates?: [number, number];
+}
+
+interface IBankDetails {
+  AccountNumber?: string;
+  bankName?: string;
+  bankBranch?: string;
+  bankQRCode?: string;
+  e_SewaID?: string;
+  e_SewaQRCode?: string;
+  khaltiID?: string;
+  khaltiQRCode?: string;
 }
 
 interface IIdentityDocument {
@@ -33,18 +44,13 @@ interface IIdentityDocument {
   License?: string;
   LicensePhoto?: string;
   citizenShipNumber?: string;
-  citizenShipPhoto?: string;
-  EmergencyContact?: string;
-  EmergencyName?: string;
-  EmergencyEmail?: string;
-  AccountNumber?: string;
-  bankName?: string;
-  bankBranch?: string;
-  bankQRCode?: string;
-  e_SewaID?: string;
-  e_SewaQRCode?: string;
-  khaltiID?: string;
-  KhaltiQRCode?: string;
+  citizenShipPhoto?: [string];
+}
+
+interface IEmergencyContact {
+  name: string;
+  phone: string;
+  relation: string;
 }
 
 export interface IAdmin extends Document {
@@ -57,6 +63,7 @@ export interface IAdmin extends Document {
   permanentAddress: IAddress;
   temporaryAddress?: IAddress;
   identityDocument?: IIdentityDocument;
+  bankDetails?: IBankDetails;
   chats?: Types.ObjectId[];
   isActive: boolean;
   lastLogin?: Date;
@@ -65,13 +72,15 @@ export interface IAdmin extends Document {
   permissions: IAdminAccess;
   twoFactorEnabled: boolean;
   profileImage?: string;
-  createdAt: Date;
-  updatedAt: Date;
   resetPasswordToken?: string;
   resetPasswordExpire?: Date;
   createdBy?: Types.ObjectId;
+  emergencyContact: IEmergencyContact;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
+// ---------------- Schemas ----------------
 const AdminAccessSchema = new Schema<IAdminAccess>({
   dashboard: { type: Boolean, default: true },
   userManagement: { type: Boolean, default: false },
@@ -86,25 +95,14 @@ const AdminAccessSchema = new Schema<IAdminAccess>({
 });
 
 const IdentityDocumentSchema = new Schema<IIdentityDocument>({
-  NationalID: { type: String, unique: true },
+  NationalID: { type: String, unique: true, sparse: true },
   NationalIDPhoto: { type: String },
-  passportNumber: { type: String, unique: true },
+  passportNumber: { type: String, unique: true, sparse: true },
   passportImage: { type: String },
-  License: { type: String, unique: true },
+  License: { type: String, unique: true, sparse: true },
   LicensePhoto: { type: String },
-  citizenShipNumber: { type: String, unique: true },
-  citizenShipPhoto: [{ type: String }],
-  EmergencyContact: { type: String },
-  EmergencyName: { type: String },
-  EmergencyEmail: { type: String },
-  AccountNumber: { type: String },
-  bankName: { type: String },
-  bankBranch: { type: String },
-  bankQRCode: { type: String },
-  e_SewaID: { type: String },
-  e_SewaQRCode: { type: String },
-  khaltiID: { type: String },
-  KhaltiQRCode: { type: String },
+  citizenShipNumber: { type: String, unique: true, sparse: true },
+  citizenShipPhoto: { type: [String] },
 });
 
 const AddressSchema = new Schema<IAddress>({
@@ -115,17 +113,45 @@ const AddressSchema = new Schema<IAddress>({
   nearFamousPlace: { type: String },
   country: { type: String, default: "Nepal" },
   province: { type: String },
-  zip: { type: String },
-  coordinates: { type: [Number] },
+  coordinates: {
+    type: [Number],
+    validate: {
+      validator: (v: number[]) =>
+        v.length === 2 &&
+        v[0] >= -180 &&
+        v[0] <= 180 &&
+        v[1] >= -90 &&
+        v[1] <= 90,
+      message: "Invalid coordinates [longitude, latitude].",
+    },
+  },
 });
 
+const EmergencyContactSchema = new Schema<IEmergencyContact>({
+  name: { type: String, required: true },
+  phone: { type: String, required: true },
+  relation: { type: String, required: true },
+});
+
+const BankDetailsSchema = new Schema<IBankDetails>({
+  AccountNumber: { type: String, required: true }, // Example: Made required
+  bankName: { type: String, required: true },
+  bankBranch: { type: String },
+  bankQRCode: { type: String },
+  e_SewaID: { type: String },
+  e_SewaQRCode: { type: String },
+  khaltiID: { type: String },
+  khaltiQRCode: { type: String },
+});
+
+// ---------------- Admin Schema ----------------
 const AdminSchema = new Schema<IAdmin>(
   {
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
     phone: { type: String, required: true },
-    accountType: { type: String, default: "admin" },
+    accountType: { type: String, enum: ["admin"], default: "admin" },
     role: {
       type: String,
       required: true,
@@ -135,6 +161,7 @@ const AdminSchema = new Schema<IAdmin>(
     permanentAddress: { type: AddressSchema, required: true },
     temporaryAddress: { type: AddressSchema },
     identityDocument: { type: IdentityDocumentSchema },
+    bankDetails: { type: BankDetailsSchema },
     chats: [{ type: Types.ObjectId, ref: "Chat" }],
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date },
@@ -146,11 +173,11 @@ const AdminSchema = new Schema<IAdmin>(
     resetPasswordToken: { type: String },
     resetPasswordExpire: { type: Date },
     createdBy: { type: Types.ObjectId, ref: "Admin" },
+    emergencyContact: { type: EmergencyContactSchema, required: true },
   },
   { timestamps: true }
 );
 
-// Indexes
 AdminSchema.index({ createdAt: -1 });
 
 export const Admin = mongoose.model<IAdmin>("Admin", AdminSchema);

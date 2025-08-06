@@ -3,13 +3,10 @@ import mongoose, { Document, Schema, Types } from "mongoose";
 // ====================== ADDRESS INTERFACE ======================
 interface IAddress {
   district: string;
-  municipality?: string;
-  city?: string;
   tole?: string;
   nearFamousPlace?: string;
-  country: string;
-  province: string;
-  zip: string;
+  country?: string;
+  province?: string;
   coordinates?: [number, number];
 }
 
@@ -30,6 +27,10 @@ export interface ICustomerUser extends Document {
   createdAt: Date;
   updatedAt: Date;
   gifts?: Types.ObjectId[];
+  resetPasswordToken?: string;
+  resetPasswordExpire?: Date;
+  referralCount?: Types.ObjectId[];
+  chats?: Types.ObjectId[];
 }
 
 const CustomerUserSchema = new Schema<ICustomerUser>(
@@ -42,15 +43,14 @@ const CustomerUserSchema = new Schema<ICustomerUser>(
     role: {
       type: String,
       enum: ["new", "occasional", "regular", "loyal"],
+      default: "new",
     },
     address: {
       district: { type: String },
-      municipality: { type: String },
-      city: { type: String },
       tole: { type: String },
       nearFamousPlace: { type: String },
       country: { type: String, default: "Nepal" },
-      province: { type: String },
+      province: { type: String, default: "Bagmati" },
       zip: { type: String },
       coordinates: { type: [Number] },
     },
@@ -60,6 +60,10 @@ const CustomerUserSchema = new Schema<ICustomerUser>(
     isVerified: { type: Boolean, default: false },
     referBy: { type: Types.ObjectId, ref: "CustomerUser" },
     gifts: [{ type: Types.ObjectId, ref: "Gift" }],
+    resetPasswordToken: { type: String },
+    resetPasswordExpire: { type: Date },
+    referralCount: [{ type: Types.ObjectId, ref: "CustomerUser" }],
+    chats: [{ type: Types.ObjectId, ref: "Chat" }],
   },
   { timestamps: true }
 );

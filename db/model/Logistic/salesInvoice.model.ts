@@ -1,26 +1,10 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 
 // ====================== INTERFACES ======================
-interface ISalesInvoiceItem {
-  product: Types.ObjectId; // Reference to FinishedProduct
-  variantIndex: number; // Index of variant in FinishedProduct.variants[]
-  batchNumber?: string; // For traceability
-  quantity: number;
-  unit: string; // "bottle", "jar", "L", "gallon"
-  unitPrice: number;
-  taxRate: number; // VAT (13% in Nepal)
-  discount: number;
-  totalAmount: number;
-  waterQualityAtSale?: {
-    phLevel?: number;
-    tdsLevel?: number;
-  };
-}
+
 interface IAddress {
   district: string;
-  municipality?: string;
   tole?: string;
-  province: string;
 }
 
 interface IPaymentInfo {
@@ -35,20 +19,24 @@ interface IPaymentInfo {
   transactionId?: string;
   paymentDate?: Date;
   dueDate?: Date; // For credit payments
+  isTotalPaid?: boolean;
+  remainingAmount?: number;
   status: "pending" | "completed" | "failed" | "refunded";
 }
 
-interface IDeliveryInfo {
-  deliveryType: "pickup" | "factoryDelivery" | "thirdParty";
-  deliveryDate?: Date;
-  deliveredBy?: Types.ObjectId; // Worker ID
-  trackingNumber?: string;
-  shippingCost: number;
-  deliveryAddress?: {
-    district: string;
-    municipality?: string;
-    tole?: string;
-    province: string;
+interface ISalesInvoiceItem {
+  product: Types.ObjectId; // Reference to FinishedProduct
+  variantIndex: number; // Refers to variants array in FinishedProduct
+  batchNumber?: string; // For batch tracking
+  quantity: number;
+  unit: string;
+  unitPrice: number;
+  taxRate?: number; // Nepal VAT
+  discount?: number;
+  totalAmount: number;
+  waterQualityAtSale?: {
+    phLevel?: number;
+    tdsLevel?: number;
   };
 }
 
@@ -56,7 +44,7 @@ interface IDeliveryInfo {
 export interface ISalesInvoice extends Document {
   // **Invoice Identification**
   invoiceNumber: string; // Auto-generated (e.g., "WF-2023-001")
-  customInvoiceId?: string; // For external reference
+  customInvoiceId?: Types.ObjectId; // For external reference
   orderId?: Types.ObjectId; // Reference to SalesOrder (if applicable)
 
   // **Customer Information**
@@ -65,6 +53,7 @@ export interface ISalesInvoice extends Document {
   customerName: string;
   customerPhone: string;
   customerAddress?: IAddress; // From Customer schema
+  customerEmail?: string;
 
   // **Company & Branch Details**
   company: Types.ObjectId; // Reference to Company (Water Factory)
@@ -75,7 +64,6 @@ export interface ISalesInvoice extends Document {
   invoiceDate: Date;
   dueDate?: Date; // For credit sales
   paymentTerms: "cash" | "7days" | "15days" | "30days";
-  currency: string; // "NPR" (default)
   subtotal: number;
   totalTax: number;
   totalDiscount: number;
@@ -83,6 +71,7 @@ export interface ISalesInvoice extends Document {
   grandTotal: number;
   amountPaid: number;
   balanceDue: number;
+  expectedBalancePaymentDate?: Date;
   paymentStatus: "unpaid" | "partial" | "paid" | "overdue";
 
   // **Items Sold (Water Products)**
@@ -92,12 +81,7 @@ export interface ISalesInvoice extends Document {
   payments: IPaymentInfo[];
 
   // **Delivery Information**
-  delivery: IDeliveryInfo;
   isDelivered: boolean;
-
-  // **Discounts & Promotions**
-  appliedCoupon?: string;
-  loyaltyPointsUsed?: number;
 
   // **Water-Specific Fields**
   waterTestReport?: string; // Link to quality report (if applicable)
@@ -127,8 +111,8 @@ const SalesInvoiceItemSchema = new Schema<ISalesInvoiceItem>({
     ref: "FinishedProduct",
     required: true,
   },
-  variantIndex: { type: Number, required: true }, // Refers to variants array in FinishedProduct
-  batchNumber: { type: String }, // For batch tracking
+  variantIndex: { type: Number, required: true },
+  batchNumber: { type: String },
   quantity: { type: Number, required: true },
   unit: { type: String, required: true },
   unitPrice: { type: Number, required: true },
@@ -151,28 +135,12 @@ const PaymentInfoSchema = new Schema<IPaymentInfo>({
   transactionId: { type: String },
   paymentDate: { type: Date },
   dueDate: { type: Date }, // For credit sales
+  isTotalPaid: { type: Boolean },
+  remainingAmount: { type: Number },
   status: {
     type: String,
     enum: ["pending", "completed", "failed", "refunded"],
     default: "pending",
-  },
-});
-
-const DeliveryInfoSchema = new Schema<IDeliveryInfo>({
-  deliveryType: {
-    type: String,
-    required: true,
-    enum: ["pickup", "factoryDelivery", "thirdParty"],
-  },
-  deliveryDate: { type: Date },
-  deliveredBy: { type: Schema.Types.ObjectId, ref: "Worker" },
-  trackingNumber: { type: String },
-  shippingCost: { type: Number, default: 0 },
-  deliveryAddress: {
-    district: { type: String },
-    municipality: { type: String },
-    tole: { type: String },
-    province: { type: String },
   },
 });
 
@@ -191,7 +159,7 @@ const SalesInvoiceSchema = new Schema<ISalesInvoice>(
   {
     // **Invoice Identification**
     invoiceNumber: { type: String, required: true, unique: true },
-    customInvoiceId: { type: String },
+    customInvoiceId: { type: Schema.Types.ObjectId },
     orderId: { type: Schema.Types.ObjectId, ref: "SalesOrder" },
 
     // **Customer Information**
@@ -213,6 +181,7 @@ const SalesInvoiceSchema = new Schema<ISalesInvoice>(
       tole: { type: String },
       province: { type: String },
     },
+    customerEmail: { type: String },
 
     // **Company & Branch Details**
     company: {
@@ -235,7 +204,6 @@ const SalesInvoiceSchema = new Schema<ISalesInvoice>(
       enum: ["cash", "7days", "15days", "30days"],
       default: "cash",
     },
-    currency: { type: String, default: "NPR" },
     subtotal: { type: Number, required: true },
     totalTax: { type: Number, required: true },
     totalDiscount: { type: Number, default: 0 },
@@ -243,6 +211,7 @@ const SalesInvoiceSchema = new Schema<ISalesInvoice>(
     grandTotal: { type: Number, required: true },
     amountPaid: { type: Number, default: 0 },
     balanceDue: { type: Number, required: true },
+    expectedBalancePaymentDate: { type: Date },
     paymentStatus: {
       type: String,
       enum: ["unpaid", "partial", "paid", "overdue"],
@@ -255,13 +224,7 @@ const SalesInvoiceSchema = new Schema<ISalesInvoice>(
     // **Payment Tracking**
     payments: [PaymentInfoSchema],
 
-    // **Delivery Information**
-    delivery: { type: DeliveryInfoSchema, required: true },
     isDelivered: { type: Boolean, default: false },
-
-    // **Discounts & Promotions**
-    appliedCoupon: { type: String },
-    loyaltyPointsUsed: { type: Number, default: 0 },
 
     // **Water-Specific Fields**
     waterTestReport: { type: String },
