@@ -178,8 +178,7 @@ export const verifyUserOTP = async (
     if (
       !permanentAddress.district ||
       !permanentAddress.country ||
-      !permanentAddress.province ||
-      !permanentAddress.zip
+      !permanentAddress.province 
     ) {
       return next(
         new ValidationError("Complete permanent address is required")

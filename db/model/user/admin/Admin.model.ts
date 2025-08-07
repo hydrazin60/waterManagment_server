@@ -15,13 +15,13 @@ interface IAdminAccess {
 }
 
 interface IAddress {
-  district: string;
+  district?: string;
   municipality?: string;
   city?: string;
   tole?: string;
   nearFamousPlace?: string;
-  country: string;
-  province: string;
+  country?: string;
+  province?: string;
   coordinates?: [number, number];
 }
 
@@ -106,7 +106,7 @@ const IdentityDocumentSchema = new Schema<IIdentityDocument>({
 });
 
 const AddressSchema = new Schema<IAddress>({
-  district: { type: String, required: true },
+  district: { type: String },
   municipality: { type: String },
   city: { type: String },
   tole: { type: String },
@@ -115,22 +115,22 @@ const AddressSchema = new Schema<IAddress>({
   province: { type: String },
   coordinates: {
     type: [Number],
-    validate: {
-      validator: (v: number[]) =>
-        v.length === 2 &&
-        v[0] >= -180 &&
-        v[0] <= 180 &&
-        v[1] >= -90 &&
-        v[1] <= 90,
-      message: "Invalid coordinates [longitude, latitude].",
-    },
+    // validate: {
+    //   validator: (v: number[]) =>
+    //     v.length === 2 &&
+    //     v[0] >= -180 &&
+    //     v[0] <= 180 &&
+    //     v[1] >= -90 &&
+    //     v[1] <= 90,
+    //   message: "Invalid coordinates [longitude, latitude].",
+    // },
   },
 });
 
 const EmergencyContactSchema = new Schema<IEmergencyContact>({
-  name: { type: String, required: true },
-  phone: { type: String, required: true },
-  relation: { type: String, required: true },
+  name: { type: String },
+  phone: { type: String },
+  relation: { type: String },
 });
 
 const BankDetailsSchema = new Schema<IBankDetails>({
@@ -173,7 +173,7 @@ const AdminSchema = new Schema<IAdmin>(
     resetPasswordToken: { type: String },
     resetPasswordExpire: { type: Date },
     createdBy: { type: Types.ObjectId, ref: "Admin" },
-    emergencyContact: { type: EmergencyContactSchema, required: true },
+    emergencyContact: { type: EmergencyContactSchema },
   },
   { timestamps: true }
 );
