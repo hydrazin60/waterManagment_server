@@ -34,6 +34,8 @@ export const GetOwnProfile = catchAsync(    // get own profile
   async (req: Request, res: Response, next: NextFunction) => {
     const userId = req.user?.id;
     const userType = req.user?.type;
+    console.log(userId);
+    console.log(userType);
 
     if (!userId || !mongoose.Types.ObjectId.isValid(userId)) {
       return next(

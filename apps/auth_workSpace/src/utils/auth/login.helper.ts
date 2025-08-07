@@ -50,14 +50,15 @@ export const findUserByEmail = async (
 };
 
 export const getUserModelName = (user: LeanIUser): string => {
-
-  if (user.role) {
-    return user.role.toLowerCase(); 
+  if (user.accountType) {
+    return user.accountType.toLowerCase();
   }
   // Then check business roles
   if (
     user.roleInCompany &&
-    ["owner", "manager", "ceo", "cbo", "HR", "director"].includes(user.roleInCompany)
+    ["owner", "manager", "ceo", "cbo", "HR", "director"].includes(
+      user.roleInCompany
+    )
   ) {
     return "business";
   }
@@ -69,7 +70,9 @@ export const getUserModelName = (user: LeanIUser): string => {
   // Check admin roles
   if (
     user.roleInCompany &&
-    ["superadmin", "admin", "moderator", "support", "developer"].includes(user.roleInCompany)
+    ["superadmin", "admin", "moderator", "support", "developer"].includes(
+      user.roleInCompany
+    )
   ) {
     return "admin";
   }

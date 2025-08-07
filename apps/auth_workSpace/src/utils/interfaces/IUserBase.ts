@@ -9,7 +9,7 @@ export interface IUserBase extends Document {
   _id: string;
   email: string;
   password: string;
-  role ?: string;
+  role?: string;
   createdAt: Date;
   updatedAt: Date;
   resetPasswordToken?: string;
@@ -55,7 +55,8 @@ export type LeanICustomerUser = {
   _id: string;
   email: string;
   password: string;
-  role ?: string;
+  role?: string;
+  accountType: string;
   createdAt: Date;
   updatedAt: Date;
   customerType: "new" | "occasional" | "regular" | "loyal";
@@ -67,7 +68,8 @@ export type LeanIBusinessUser = {
   _id: string;
   email: string;
   password: string;
-  role ?: string;
+  role?: string;
+  accountType: string;
   createdAt: Date;
   updatedAt: Date;
   roleInCompany: "owner" | "manager" | "ceo" | "cbo" | "HR" | "director";
@@ -79,7 +81,8 @@ export type LeanIStaff = {
   _id: string;
   email: string;
   password: string;
-  role ?: string;
+  role?: string;
+  accountType: string;
   createdAt: Date;
   updatedAt: Date;
   roleInCompany:
@@ -103,7 +106,8 @@ export type LeanIAdminUser = {
   _id: string;
   email: string;
   password: string;
-  role ?: string;
+  accountType: string;
+  role?: string;
   createdAt: Date;
   updatedAt: Date;
   roleInCompany: "superadmin" | "admin" | "moderator" | "support" | "developer";
