@@ -17,13 +17,11 @@ interface BusinessRegistrationData {
     district: string;
     province: string;
     country: string;
-    zip: string;
   };
   temporaryAddress?: {
     district: string;
     province: string;
     country: string;
-    zip: string;
   };
 }
 
@@ -31,13 +29,13 @@ export const validateBusinessRegistrationData = (
   data: Partial<BusinessRegistrationData>
 ): { valid: boolean; error?: ValidationError } => {
   const requiredFields = [
-    'verificationToken',
-    'name',
-    'email',
-    'password',
-    'phone',
-    'roleInCompany',
-    'permanentAddress'
+    "verificationToken",
+    "name",
+    "email",
+    "password",
+    "phone",
+    "roleInCompany",
+    "permanentAddress",
   ];
 
   // Check all required fields exist
@@ -88,7 +86,7 @@ export const validateBusinessRegistrationData = (
 
   // Validate permanent address
   const address = data.permanentAddress!;
-  if (!address.district || !address.province || !address.country || !address.zip) {
+  if (!address.district || !address.province || !address.country) {
     return {
       valid: false,
       error: new ValidationError("Complete permanent address is required", {
