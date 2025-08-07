@@ -196,8 +196,7 @@ const BusinessUserSchema = new Schema<IBusinessUser>(
 
 // ====================== INDEXES ======================
 
-BusinessUserSchema.index({ "temporaryAddress.district": 1 });
-BusinessUserSchema.index({ "permanentAddress.district": 1 });
+
 BusinessUserSchema.index({ roleInCompany: 1 });
 BusinessUserSchema.index({ isActive: 1, isSuspended: 1 });
 
