@@ -1,6 +1,15 @@
 import e from "express";
-import { RegisterNewCompany } from "../controllers/company.controller";
+
 import { isAuthenticated } from "../../../../packages/middleware/isAuthenticated";
+import { fetchSingleCompanyBYOwner } from "../controllers/owner/company.controller";
+import { registerCompany } from "../controllers/company.controller";
 const companyRouter = e.Router();
- companyRouter.post("/register-company" , isAuthenticated ,RegisterNewCompany)
+
+companyRouter.post("/register-company", isAuthenticated, registerCompany);
+
+companyRouter.get(
+  "/fetch/your_Company/data/:companyId",
+  isAuthenticated,
+  fetchSingleCompanyBYOwner
+);
 export default companyRouter;

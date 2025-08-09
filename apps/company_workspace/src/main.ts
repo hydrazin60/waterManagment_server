@@ -33,7 +33,6 @@ app.use(morgan("dev"));
 app.use(express.json({ limit: "10kb" }));
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
-app.use(errorMiddleware);
 // Static files
 app.use("/assets", express.static(path.join(__dirname, "assets")));
 
@@ -46,7 +45,7 @@ app.get("/health", (req, res) => {
 app.use("/api/v1", companyRouter);
 
 // Error handling middleware (should be last)
-
+app.use(errorMiddleware);
 const server = app.listen(port, () => {
   console.log(`Company Service running on port ${port}`);
 });

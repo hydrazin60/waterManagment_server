@@ -2,10 +2,19 @@ import { z } from "zod";
 
 export const createCompanySchema = z.object({
   // Basic Company Info
-  companyName: z.string().trim().min(2, "Company name must be at least 2 characters"),
+  companyName: z
+    .string()
+    .trim()
+    .min(2, "Company name must be at least 2 characters"),
   legalName: z.string().min(2, "Legal name must be at least 2 characters"),
-  companyType: z.enum(["supplier", "manufacturer", "distributor", "retailer", "service"]),
-  industry: z.enum(["water", "food", "construction", "textile", "other"]),
+  companyType: z.enum([
+    "supplier",
+    "manufacturer",
+    "distributor",
+    "retailer",
+    "service",
+  ]),
+  industry: z.enum(["water", "other"]),
 
   // Optional basic info
   companyLogo: z.string().url().optional(),
@@ -14,7 +23,9 @@ export const createCompanySchema = z.object({
   foundingDate: z.coerce.date().optional(),
 
   // Business Registration
-  taxIdentificationNumber: z.string().min(5, "Tax ID must be at least 5 characters"),
+  taxIdentificationNumber: z
+    .string()
+    .min(5, "Tax ID must be at least 5 characters"),
   vatNumber: z.string().optional(),
   identityDocuments: z.object({
     registrationNumber: z.string().optional(),

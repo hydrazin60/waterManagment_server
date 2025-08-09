@@ -1,6 +1,5 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
 
-// ====================== COMMON INTERFACES ======================
 interface IAddress {
   district: string;
   city?: string;
@@ -40,9 +39,7 @@ interface IChatSettings {
   onlineStatusVisible: boolean;
 }
 
-// ====================== BUSINESS USER SCHEMA ======================
 export interface IBusinessUser extends Document {
-  // Personal Info
   name: string;
   email: string;
   password: string;
@@ -55,61 +52,48 @@ export interface IBusinessUser extends Document {
     phone: string;
     relation: string;
   };
-  // Addresses
   permanentAddress: IAddress;
   temporaryAddress?: IAddress;
-
-  // Authentication & Security
   isEmailVerified: boolean;
   isPhoneVerified: boolean;
   resetPasswordToken?: string;
   resetPasswordExpire?: Date;
-
-  // Documents
   bankDetails?: IBankDetails;
   identityDocuments?: IIdentityDocuments;
-
-  // User Settings
   notificationPreferences: {
     email: boolean;
     sms: boolean;
     push: boolean;
   };
   chatSettings: IChatSettings;
-  // Company Association
-  company?: Types.ObjectId;
+  companies: Types.ObjectId[];
   roleInCompany: "owner" | "manager" | "ceo" | "cbo" | "HR" | "director";
   department?: string;
   position?: string;
   isPrimaryContact: boolean;
-
-  // Status
   isActive: boolean;
   isSuspended: boolean;
   suspensionReason?: string;
-
-  // Timestamps
   createdAt: Date;
   updatedAt: Date;
 }
 
-// ====================== SUB-SCHEMAS ======================
 const AddressSchema = new Schema<IAddress>({
-  district: { type: String },
+  district: { type: String, required: true },
   city: { type: String },
   tole: { type: String },
   nearFamousPlace: { type: String },
   country: { type: String, default: "Nepal" },
-  province: { type: String },
-  zip: { type: String },
+  province: { type: String, required: true },
+  zip: { type: String, required: true },
   coordinates: { type: [Number] },
 });
 
 const BankDetailsSchema = new Schema<IBankDetails>({
-  accountNumber: { type: String },
-  bankName: { type: String },
-  branchName: { type: String },
-  accountHolderName: { type: String },
+  accountNumber: { type: String, required: true },
+  bankName: { type: String, required: true },
+  branchName: { type: String, required: true },
+  accountHolderName: { type: String, required: true },
   bankQRCode: { type: String },
   eSewaID: { type: String },
   eSewaQRCode: { type: String },
@@ -133,10 +117,8 @@ const ChatSettingsSchema = new Schema<IChatSettings>({
   onlineStatusVisible: { type: Boolean, default: true },
 });
 
-// ====================== MAIN SCHEMA ======================
 const BusinessUserSchema = new Schema<IBusinessUser>(
   {
-    // Personal Info
     name: { type: String, required: true },
     email: { type: String, required: true, unique: true },
     password: { type: String, required: true },
@@ -152,31 +134,21 @@ const BusinessUserSchema = new Schema<IBusinessUser>(
       phone: { type: String },
       relation: { type: String },
     },
-    // Addresses
-    permanentAddress: { type: AddressSchema },
+    permanentAddress: { type: AddressSchema, required: true },
     temporaryAddress: { type: AddressSchema },
-
-    // Authentication & Security
     isEmailVerified: { type: Boolean, default: false },
     isPhoneVerified: { type: Boolean, default: false },
     resetPasswordToken: { type: String },
     resetPasswordExpire: { type: Date },
-
-    // Documents
     bankDetails: { type: BankDetailsSchema },
     identityDocuments: { type: IdentityDocumentsSchema },
-
-    // User Settings
     notificationPreferences: {
       email: { type: Boolean, default: true },
       sms: { type: Boolean, default: true },
       push: { type: Boolean, default: true },
     },
     chatSettings: { type: ChatSettingsSchema, default: () => ({}) },
-
-    // Company Association
-    company: { type: Schema.Types.ObjectId, ref: "Company", required: false },
-
+    companies: [{ type: Types.ObjectId, ref: "Company" }],
     roleInCompany: {
       type: String,
       required: true,
@@ -185,8 +157,6 @@ const BusinessUserSchema = new Schema<IBusinessUser>(
     department: { type: String },
     position: { type: String },
     isPrimaryContact: { type: Boolean, default: false },
-
-    // Status
     isActive: { type: Boolean, default: true },
     isSuspended: { type: Boolean, default: false },
     suspensionReason: { type: String },
@@ -194,13 +164,10 @@ const BusinessUserSchema = new Schema<IBusinessUser>(
   { timestamps: true }
 );
 
-// ====================== INDEXES ======================
-
-
+BusinessUserSchema.index({ companies: 1 });
 BusinessUserSchema.index({ roleInCompany: 1 });
 BusinessUserSchema.index({ isActive: 1, isSuspended: 1 });
 
-// ====================== MODEL ======================
 export const BusinessUser = mongoose.model<IBusinessUser>(
   "BusinessUser",
   BusinessUserSchema
