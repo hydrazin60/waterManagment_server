@@ -1,5 +1,5 @@
 import mongoose, { Document, Schema, Types } from "mongoose";
-
+ 
 interface IAddress {
   district: string;
   municipality?: string;
@@ -196,7 +196,7 @@ const CompanySchema = new Schema<ICompany>(
     createdBy: {
       type: Schema.Types.ObjectId,
       required: true,
-      ref: "ownerModel",
+      refPath: "ownerModel",
     },
     identityDocuments: { type: IdentityDocumentsSchema },
     primaryEmail: { type: String, required: true },
