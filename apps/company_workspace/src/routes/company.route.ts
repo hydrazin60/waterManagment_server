@@ -1,7 +1,7 @@
 import e from "express";
 
 import { isAuthenticated } from "../../../../packages/middleware/isAuthenticated";
-import { fetchSingleCompanyBYOwner } from "../controllers/owner/company.controller";
+import { fetchSingleCompanyBYOwner } from "../controllers/ownerandAdmin/company.controller";
 import { registerCompany } from "../controllers/company.controller";
 const companyRouter = e.Router();
 
