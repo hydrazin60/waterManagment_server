@@ -1,7 +1,7 @@
-import { Company } from '../../../../../db/model/company/companyData.model';
+import { Company, ICompany } from '../../../../../db/model/company/companyData.model';
 import { catchAsync } from "../../../../../packages/error_handler/error_middleware";
 import { NextFunction, Request, Response } from "express";
-import { DatabaseError } from "../../../../../packages/error_handler";
+import { DatabaseError, ValidationError } from "../../../../../packages/error_handler";
 import { CompanyOwnerFinder } from '../../utils/companYHelper';
 import { Admin } from "../../../../../db/model/user/admin/Admin.model";
 import { BusinessUser } from "../../../../../db/model/user/BusinessUser/BusinessUser.model";
@@ -51,3 +51,73 @@ export const DeleteCompany = catchAsync(async (req: Request, res: Response, next
         data: { deletedCompanyId: deletedCompany._id }
     });
 });
+
+
+
+export const EditCompanyData = catchAsync(
+    async (req: Request, res: Response, next: NextFunction) => {
+        const editableFields: (keyof ICompany)[] = [
+            "companyName",
+            "companyType",
+            "industry",
+            "companyLogo",
+            "companyWebsite",
+            "companyDescription",
+            "primaryEmail",
+            "primaryPhone",
+            "secondaryPhone",
+            "emergencyContact",
+            "operationalAddress",
+            "warehouseLocations",
+            "bankDetails",
+            "paymentMethods",
+            "operatingHours",
+            "deliveryRadius",
+            "deliveryFee",
+            "serviceAreas",
+            "isActive",
+        ];
+
+        // 1. Verify ownership and get the company document
+        const company = await CompanyOwnerFinder(req.user, req.params.companyId, next);
+        if (!company) return; // Error handled inside CompanyOwnerFinder
+
+        // 2. Prepare update object by filtering req.body to only allow editable fields
+        const updates: Partial<ICompany> = {};
+
+        for (const key of editableFields) {
+            if (req.body.hasOwnProperty(key)) {
+                updates[key] = req.body[key];
+            }
+        }
+        // 3. Optionally: Validate updates here or rely on Mongoose validators
+        if (Object.keys(updates).length === 0) {
+            return next(
+                new ValidationError("No valid fields provided for update", {
+                    statusCode: 400,
+                    errorCode: "NO_UPDATE_FIELDS",
+                })
+            );
+        }
+        // 4. Perform atomic update with validation and return updated document
+        const updatedCompany = await Company.findByIdAndUpdate(
+            company._id,
+            updates,
+            { new: true, runValidators: true }
+        );
+        if (!updatedCompany) {
+            return next(
+                new ValidationError("Failed to update company", {
+                    statusCode: 500,
+                    errorCode: "UPDATE_FAILED",
+                })
+            );
+        }
+        // 5. Send success response with updated company
+        return res.status(200).json({
+            status: "success",
+            message: "Company updated successfully",
+            data: updatedCompany,
+        });
+    }
+);
