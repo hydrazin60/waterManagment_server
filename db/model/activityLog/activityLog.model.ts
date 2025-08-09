@@ -1,6 +1,6 @@
+// activity-log.model.ts
 import mongoose, { Document, Schema } from "mongoose";
 
-// Interface for Activity Log document
 export interface IActivityLog extends Document {
   action: string;
   entity: string;
@@ -8,26 +8,14 @@ export interface IActivityLog extends Document {
   performedBy: mongoose.Types.ObjectId;
   metadata?: Record<string, any>;
   timestamp: Date;
-  performedByModel: string;
+  performedByModel: "BusinessUser" | "Worker" | "Admin"; // Explicit enum in interface
 }
 
 const ActivityLogSchema = new Schema<IActivityLog>(
   {
-    action: {
-      type: String,
-      required: true,
-      index: true,
-    },
-    entity: {
-      type: String,
-      required: true,
-      index: true,
-    },
-    entityId: {
-      type: Schema.Types.ObjectId,
-      required: true,
-      index: true,
-    },
+    action: { type: String, required: true, index: true },
+    entity: { type: String, required: true, index: true },
+    entityId: { type: Schema.Types.ObjectId, required: true, index: true },
     performedBy: {
       type: Schema.Types.ObjectId,
       required: true,
@@ -36,29 +24,22 @@ const ActivityLogSchema = new Schema<IActivityLog>(
     performedByModel: {
       type: String,
       required: true,
-      enum: ["BusinessUser", "Worker"],
+      enum: ["BusinessUser", "Worker", "Admin"],
     },
-    metadata: {
-      type: Schema.Types.Mixed,
-    },
-    timestamp: {
-      type: Date,
-      default: Date.now,
-      index: true,
-    },
+    metadata: { type: Schema.Types.Mixed },
+    timestamp: { type: Date, default: Date.now, index: true },
   },
   {
-    timestamps: false, // We use our own timestamp field
+    timestamps: false,
     versionKey: false,
   }
 );
 
-// Indexes for faster querying
-ActivityLogSchema.index({ action: 1, entity: 1 });
-ActivityLogSchema.index({ performedBy: 1, timestamp: -1 });
-ActivityLogSchema.index({ entityId: 1, entity: 1 });
+// Clear existing model if compiled before
+if (mongoose.models.ActivityLog) {
+  delete mongoose.models.ActivityLog;
+}
 
-// Model
 export const ActivityLog = mongoose.model<IActivityLog>(
   "ActivityLog",
   ActivityLogSchema
