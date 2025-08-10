@@ -73,6 +73,9 @@ export const CompanyOwnerFinder = async (
 ) => {
   try {
     // First validate the user
+    if (!user) {
+      return next(new AuthError("You are not authorized", { statusCode: 401, errorCode: "UNAUTHORIZED" }));
+    }
     const validatedUser = await validateBusinessUser(user, next);
     if (!validatedUser) return null; // Error already handled
 
