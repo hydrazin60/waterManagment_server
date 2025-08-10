@@ -7,6 +7,7 @@ import { dbConnect } from "../../../db/dbConnect";
 import { errorMiddleware } from "../../../packages/error_handler/error_middleware";
 import companyRouter from "./routes/company.route";
 import * as path from "path";
+import branchRouter from "./routes/branch.routes";
 
 const app = express();
 const port = process.env.PORT || 3333;
@@ -43,6 +44,7 @@ app.get("/health", (req, res) => {
 
 // API routes
 app.use("/api/v1", companyRouter);
+app.use("/api/v1", branchRouter)
 
 // Error handling middleware (should be last)
 app.use(errorMiddleware);

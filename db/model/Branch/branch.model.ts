@@ -2,14 +2,13 @@ import mongoose, { Document, Schema, Types } from "mongoose";
 
 // ====================== INTERFACES ======================
 interface IAddress {
-  country: string;
-  province: string;
-  district: string;
+  country?: string;
+  province?: string;
+  district?: string;
   municipality?: string;
   city?: string;
   tole?: string;
   nearFamousPlace?: string;
-  zip?: string;
   coordinates?: [number, number]; // [longitude, latitude]
 }
 
@@ -50,7 +49,7 @@ export interface IBranch extends Document {
   branchManager?: Types.ObjectId; // Reference to Worker
 
   // **Location & Address**
-  address: IAddress;
+  address?: IAddress;
   operatingHours?: IOperatingHours;
   deliveryRadius?: number; // in km (for local deliveries)
   serviceAreas?: string[]; // ["Kathmandu", "Lalitpur"]
@@ -117,13 +116,12 @@ export interface IBranch extends Document {
 // ====================== SUB-SCHEMAS ======================
 const AddressSchema = new Schema<IAddress>({
   country: { type: String, default: "Nepal" },
-  province: { type: String, required: true },
-  district: { type: String, required: true },
+  province: { type: String, },
+  district: { type: String, },
   municipality: { type: String },
   city: { type: String },
   tole: { type: String },
   nearFamousPlace: { type: String },
-  zip: { type: String },
   coordinates: { type: [Number] }, // [longitude, latitude]
 });
 
@@ -138,8 +136,8 @@ const ContactSchema = new Schema<IContact>({
 
 const OperatingHoursSchema = new Schema<IOperatingHours>({
   days: [{ type: String }],
-  openingTime: { type: String , default: "08:00"},
-  closingTime: { type: String  , default: "17:00"},
+  openingTime: { type: String, default: "08:00" },
+  closingTime: { type: String, default: "17:00" },
   is24Hours: { type: Boolean, default: false },
 });
 
@@ -158,7 +156,7 @@ const StorageLocationSchema = new Schema<IStorageLocation>({
 const BranchSchema = new Schema<IBranch>(
   {
     // **Basic Branch Info**
-    branchName: { type: String, required: true, unique: true },
+    branchName: { type: String, required: true },
     branchCode: { type: String, required: true, unique: true },
     description: { type: String, default: "Water Factory Branch" },
     branchType: {
@@ -173,7 +171,7 @@ const BranchSchema = new Schema<IBranch>(
     branchManager: { type: Schema.Types.ObjectId, ref: "Worker" },
 
     // **Location & Address**
-    address: { type: AddressSchema, required: true },
+    address: { type: AddressSchema },
     operatingHours: { type: OperatingHoursSchema },
     deliveryRadius: { type: Number }, // in km
     serviceAreas: [{ type: String }],
@@ -250,7 +248,6 @@ const BranchSchema = new Schema<IBranch>(
 );
 
 // ====================== INDEXES ======================
-BranchSchema.index({ branchName: 1 }, { unique: true });
 BranchSchema.index({ branchCode: 1 }, { unique: true });
 BranchSchema.index({ company: 1 });
 BranchSchema.index({ "address.district": 1 });
