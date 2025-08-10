@@ -13,6 +13,7 @@ interface IUserResult<T> {
   userType: UserType;
 }
 
+
 export async function findUserByType(
   userId: Types.ObjectId,
   accountType: UserType

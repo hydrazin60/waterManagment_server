@@ -57,8 +57,6 @@ export const DeleteCompany = catchAsync(async (req: Request, res: Response, next
     });
 });
 
-
-
 export const EditCompanyData = catchAsync(
     async (req: Request, res: Response, next: NextFunction) => {
         const editableFields: (keyof ICompany)[] = [
@@ -160,7 +158,9 @@ export const registerABranch = catchAsync(async (req: Request, res: Response, ne
         ...req.body,
         company: company._id,
         createdBy: user.user._id,
-        branchCode: branchCode
+        branchCode: branchCode,
+        createdByModel:
+            user.user.accountType === "admin" ? "Admin" : "BusinessUser",
     };
 
     const branch = await Branch.create(branchData);
