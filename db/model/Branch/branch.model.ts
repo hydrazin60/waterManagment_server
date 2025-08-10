@@ -111,6 +111,7 @@ export interface IBranch extends Document {
   createdAt: Date;
   updatedAt: Date;
   createdBy: Types.ObjectId; // Reference to BusinessUser
+  createdByModel: "Admin" | "BusinessUser";
 }
 
 // ====================== SUB-SCHEMAS ======================
@@ -240,9 +241,15 @@ const BranchSchema = new Schema<IBranch>(
     // **Metadata**
     createdBy: {
       type: Schema.Types.ObjectId,
-      ref: "BusinessUser",
       required: true,
+      refPath: "createdByModel"
     },
+    createdByModel: {
+      type: String,
+      required: true,
+      enum: ["Admin", "BusinessUser"]
+    }
+
   },
   { timestamps: true }
 );
